@@ -1,0 +1,16 @@
+{
+  "name": "babel-plugin-transform-bigint",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/plugin-syntax-bigint": "^7.0.0-beta.51",
+    "big-integer": "^1.6.31"
+  }
+}
