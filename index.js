@@ -47,6 +47,13 @@ module.exports = function (babel) {
     }
     return null;
   };
+  const getUpdateFunctionName = function (operator) {
+    switch (operator) {
+      case '++': return 'add';
+      case '--': return 'sub';
+    }
+    return null;
+  };
   const f = function (functionName) {
     return types.identifier('_' + functionName);
   };
@@ -74,10 +81,21 @@ module.exports = function (babel) {
       },
       AssignmentExpression: function (path, state) {
         const operator = path.node.operator;
+        //TODO:
         if (operator.endsWith('=')) {
           const functionName = getFunctionName(operator.slice(0, -'='.length));
           if (functionName != null) {
             path.replaceWith(types.assignmentExpression('=', path.node.left, types.callExpression(f(functionName), [path.node.left, path.node.right])));
+          }
+        }
+      },
+      UpdateExpression: function (path, state) {
+        const operator = path.node.operator;
+        //TODO:
+        if ((operator === '++' || operator === '--')) {
+          const functionName = getUpdateFunctionName(operator);
+          if (functionName != null) {
+            path.replaceWith(types.assignmentExpression('=', path.node.argument, types.callExpression(f(functionName), [path.node.argument, types.numericLiteral(1)])));
           }
         }
       }
