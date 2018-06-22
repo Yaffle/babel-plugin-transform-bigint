@@ -91,4 +91,7 @@ const _typeof = unary((x) => typeof x, (x) => 'bigint');
 const _neg = unaryValue((x) => -x, (x) => x.negate());
 const _not = unaryValue((x) => ~x, (x) => x.not());
 
-//export default { BigInt, _add, _sub, _mul, _div, _rem, _pow, _shl, _shr, _ushr, _and, _or, _xor, _lt, _gt, _le, _ge, _eq, _ne, _seq, _sne, _typeof, _neg, _not };
+const _inc = unaryValue((x) => ++x, (x) => x.next());
+const _dec = unaryValue((x) => --x, (x) => x.prev());
+
+//export default { BigInt, _add, _sub, _mul, _div, _rem, _pow, _shl, _shr, _ushr, _and, _or, _xor, _lt, _gt, _le, _ge, _eq, _ne, _seq, _sne, _typeof, _neg, _not, _inc, _dec };
