@@ -49,8 +49,8 @@ module.exports = function (babel) {
   };
   const getUpdateFunctionName = function (operator) {
     switch (operator) {
-      case '++': return 'add';
-      case '--': return 'sub';
+      case '++': return 'inc';
+      case '--': return 'dec';
     }
     return null;
   };
@@ -95,7 +95,7 @@ module.exports = function (babel) {
         if ((operator === '++' || operator === '--')) {
           const functionName = getUpdateFunctionName(operator);
           if (functionName != null) {
-            path.replaceWith(types.assignmentExpression('=', path.node.argument, types.callExpression(f(functionName), [path.node.argument, types.numericLiteral(1)])));
+            path.replaceWith(types.assignmentExpression('=', path.node.argument, types.callExpression(f(functionName), [path.node.argument])));
           }
         }
       }
