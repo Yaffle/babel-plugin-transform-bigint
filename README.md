@@ -2,7 +2,7 @@
 
 Usage:
 
-create a file test.js:
+1. Create a file test.js:
 ```
 // Takes a BigInt as an argument and returns a BigInt
 function nthPrime(nth) {
@@ -19,8 +19,12 @@ function nthPrime(nth) {
   }
 }
 ```
+
+2. Use babel:
+```
 npm install --save https://github.com/Yaffle/babel-plugin-transform-bigint
 npm install --save-dev @babel/core @babel/cli
 npx babel --plugins=babel-plugin-transform-bigint test.js
+```
 
-import `runtime.js`
+3. import `runtime.js`.
