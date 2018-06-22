@@ -1,5 +1,7 @@
 # babel-plugin-transform-bigint
 
+¡ It is buggy !
+
 Usage:
 
 1. Create a file test.js:
