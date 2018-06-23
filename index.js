@@ -90,7 +90,7 @@ module.exports = function (babel) {
               const a = types.Identifier('x');
               const body = types.callExpression(f(functionName), [a, y]);
               const map = types.arrowFunctionExpression([a], body, false);
-              path.replaceWith(types.callExpression(f('update'), [x.object, types.isIdentifier(x.property) ? types.StringLiteral(x.property.name) : x.property, map, types.BooleanLiteral(true)]));
+              path.replaceWith(types.callExpression(f('update'), [x.object, types.isIdentifier(x.property) && x.computed === false ? types.StringLiteral(x.property.name) : x.property, map, types.BooleanLiteral(true)]));
             } else {
               path.replaceWith(types.assignmentExpression('=', x, types.callExpression(f(functionName), [x, y])));
             }
@@ -107,7 +107,7 @@ module.exports = function (babel) {
             const a = types.Identifier('x');
             const body = types.callExpression(f(functionName), [a]);
             const map = types.arrowFunctionExpression([a], body, false);
-            path.replaceWith(types.callExpression(f('update'), [x.object, types.isIdentifier(x.property) ? types.StringLiteral(x.property.name) : x.property, map, types.BooleanLiteral(prefix)]));
+            path.replaceWith(types.callExpression(f('update'), [x.object, types.isIdentifier(x.property) && x.computed === false ? types.StringLiteral(x.property.name) : x.property, map, types.BooleanLiteral(prefix)]));
           } else {
             if (prefix) {
               path.replaceWith(types.assignmentExpression('=', x, types.callExpression(f(functionName), [x])));
