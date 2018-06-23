@@ -81,21 +81,44 @@ module.exports = function (babel) {
       },
       AssignmentExpression: function (path, state) {
         const operator = path.node.operator;
-        //TODO:
         if (operator.endsWith('=')) {
           const functionName = getFunctionName(operator.slice(0, -'='.length));
           if (functionName != null) {
-            path.replaceWith(types.assignmentExpression('=', path.node.left, types.callExpression(f(functionName), [path.node.left, path.node.right])));
+            const x = path.node.left;
+            const y = path.node.right;
+            if (types.isMemberExpression(x)) {
+              const a = types.Identifier('x');
+              const body = types.callExpression(f(functionName), [a, y]);
+              const map = types.arrowFunctionExpression([a], body, false);
+              path.replaceWith(types.callExpression(f('update'), [x.object, types.isIdentifier(x.property) ? types.StringLiteral(x.property.name) : x.property, map, types.BooleanLiteral(true)]));
+            } else {
+              path.replaceWith(types.assignmentExpression('=', x, types.callExpression(f(functionName), [x, y])));
+            }
           }
         }
       },
       UpdateExpression: function (path, state) {
         const operator = path.node.operator;
-        //TODO:
-        if ((operator === '++' || operator === '--')) {
-          const functionName = getUpdateFunctionName(operator);
-          if (functionName != null) {
-            path.replaceWith(types.assignmentExpression('=', path.node.argument, types.callExpression(f(functionName), [path.node.argument])));
+        const prefix = path.node.prefix;
+        const functionName = getUpdateFunctionName(operator);
+        if (functionName != null) {
+          const x = path.node.argument;
+          if (types.isMemberExpression(x)) {
+            const a = types.Identifier('x');
+            const body = types.callExpression(f(functionName), [a]);
+            const map = types.arrowFunctionExpression([a], body, false);
+            path.replaceWith(types.callExpression(f('update'), [x.object, types.isIdentifier(x.property) ? types.StringLiteral(x.property.name) : x.property, map, types.BooleanLiteral(prefix)]));
+          } else {
+            if (prefix) {
+              path.replaceWith(types.assignmentExpression('=', x, types.callExpression(f(functionName), [x])));
+            } else {
+              // (oldValue = x, x = _inc(oldValue), oldValue)
+              const oldValue = path.scope.generateUidIdentifier('oldValue');
+              path.scope.push({id: oldValue});
+              const assignment = types.assignmentExpression('=', x, types.callExpression(f(functionName), [oldValue]));
+              const replacement = types.sequenceExpression([types.assignmentExpression('=', oldValue, x), assignment, oldValue])
+              path.replaceWith(replacement);
+            }
           }
         }
       }
