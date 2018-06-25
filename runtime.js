@@ -51,7 +51,16 @@ const fromNumber = function (number) {
   if (number !== number || number === -1 / 0 || number === +1 / 0 || Math.floor(number) !== number) {
     throw new RangeError('Cannot convert a non-integer to a BigInt');
   }
-  return bigInt(number);
+  if (number >= -9007199254740991 && number <= +9007199254740991) {
+    return bigInt(number);
+  }
+  const getExponent = function (n) { // n >= 2
+    const e = Math.floor(Math.log(n) / Math.log(2)) - 1;
+    return n / Math.pow(2, e) >= 2 ? e + 1 : e;
+  };
+  const e = getExponent(number > 0 ? number : 0 - number) - 53;
+  const x = number / Math.pow(2, e);
+  return bigInt(x).shiftLeft(e);
 };
 
 function BigInt(value) {
