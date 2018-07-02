@@ -5,7 +5,8 @@
 Usage:
 
 1. Create a file test.js:
-```
+```javascript
+
 // Takes a BigInt as an argument and returns a BigInt
 function nthPrime(nth) {
   function isPrime(p) {
