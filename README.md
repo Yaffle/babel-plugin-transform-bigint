@@ -7,24 +7,6 @@ Usage:
 1. Create a file test.js:
 ```javascript
 
-// Takes a BigInt as an argument and returns a BigInt
-function nthPrime(nth) {
-  function isPrime(p) {
-    for (let i = 2n; i < p; i++) {
-      if (p % i === 0n) return false;
-    }
-    return true;
-  }
-  for (let i = 2n; ; i++) {
-    if (isPrime(i)) {
-      if (--nth === 0n) return i;
-    }
-  }
-}
-
-console.log('nthPrime(42n): ' + nthPrime(42n));
-// -> nthPrime(42n): 181
-
 // floor(log2(n)), n >= 1
 function ilog2(n) {
   let i = 0n;
