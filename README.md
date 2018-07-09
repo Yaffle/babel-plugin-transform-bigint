@@ -28,11 +28,12 @@ function ilog2(n) {
 
 // floor(sqrt(S)), S >= 0, https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
 function sqrt(S) {
-  if (S < 1n) {
-    return 0n;
+  let e = ilog2(S);
+  if (e < 2n) {
+    return 1n;
   }
-  let e = ilog2(S) / 4n + 1n;
-  let x = (sqrt(S / 2n**(e * 2n)) + 1n) * 2n**e;
+  let f = e / 4n + 1n;
+  let x = (sqrt(S / 2n**(f * 2n)) + 1n) * 2n**f;
   let xprev = x + 1n;
   while (xprev > x) {
     xprev = x;
