@@ -101,4 +101,4 @@ npx babel --plugins=babel-plugin-transform-bigint test.js > test-transformed.js
 </html>
 ```
 
-4. Open `test.html` in a web browser, see the console output.
+4. Open `test.html` in a web browser.
