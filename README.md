@@ -6,7 +6,6 @@ Usage:
 
 1. Create a file test.js:
 ```javascript
-
 // floor(log2(n)), n >= 1
 function ilog2(n) {
   let i = 0n;
@@ -42,8 +41,11 @@ function sqrt(S) {
   return xprev;
 }
 
-console.log('√2 ≈ 1.' + sqrt(2n * 10n**(76n * 2n)).toString().slice(1) + '…');
-// -> √2 ≈ 1.4142135623730950488016887242096980785696718753769480731766797379907324784621…
+function squareRoot(value, decimalDigits) {
+  var s = (sqrt(BigInt(value) * 10n**(BigInt(decimalDigits) * 2n + 2n)) + 5n).toString();
+  var digits = Number(decimalDigits);
+  return '√' + value +  ' ≈ ' + s.slice(0, 0 - digits - 1) + '.' + s.slice(0 - digits - 1, -1) + '…';
+}
 
 ```
 
@@ -63,9 +65,38 @@ npx babel --plugins=babel-plugin-transform-bigint test.js > test-transformed.js
   <script src="node_modules/big-integer/BigInteger.js"></script>
   <script src="node_modules/babel-plugin-transform-bigint/runtime.js"></script>
   <script src="test-transformed.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+      var form = document.querySelector("form");
+      var update = function () {
+        form.output.value = squareRoot(form.value.value, form.digits.value);
+      };
+      form.oninput = function () {
+        update();
+      };
+      update();
+    }, false);
+  </script>
+  <style>
+    output {
+      overflow-wrap: break-word;
+    }
+  </style>
 </head>
 <body>
-  See the console output.
+  <form>
+    <div>
+      <label for="value">Value:</label>
+      <input id="value" name="value" type="number" min="2" step="1" value="2" />
+    </div>
+    <div>
+      <label for="digits">Number of decimal digits:</label>
+      <input id="digits" name="digits" type="number" min="1" step="1" value="100" />
+    </div>
+    <div>
+      <output id="output" name="output" for="value digits" tabindex="0"></output>
+    </div>
+  </form>
 </body>
 </html>
 ```
