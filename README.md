@@ -42,10 +42,9 @@ function sqrt(S) {
 }
 
 function squareRoot(value, decimalDigits) {
-  var s = (sqrt(BigInt(value) * 10n**(BigInt(decimalDigits) * 2n + 2n)) + 5n).toString();
-  var digits = Number(decimalDigits);
-  return '√' + value +  ' ≈ ' + s.slice(0, 0 - digits - 1) + '.' + s.slice(0 - digits - 1, -1) + '…';
+  return (sqrt(BigInt(value) * 10n**(BigInt(decimalDigits) * 2n + 2n)) + 5n).toString();
 }
+
 
 ```
 
@@ -67,9 +66,12 @@ npx babel --plugins=babel-plugin-transform-bigint test.js > test-transformed.js
   <script src="test-transformed.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function (event) {
-      var form = document.querySelector("form");
-      var update = function () {
-        form.output.value = squareRoot(form.value.value, form.digits.value);
+      const form = document.querySelector("form");
+      const update = function () {
+        const value = form.value.value;
+        const digits = Number(form.digits.value);
+        const s = squareRoot(value, digits);
+        form.output.value = '√' + value +  ' ≈ ' + s.slice(0, 0 - digits - 1) + '.' + s.slice(0 - digits - 1, -1) + '…';
       };
       form.oninput = function () {
         update();
