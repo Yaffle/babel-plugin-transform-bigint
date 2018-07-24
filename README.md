@@ -51,7 +51,23 @@ console.log('√2 ≈ 1.' + sqrt(2n * 10n**(76n * 2n)).toString().slice(1) + '�
 ```
 npm install --save https://github.com/Yaffle/babel-plugin-transform-bigint
 npm install --save-dev @babel/core @babel/cli
-npx babel --plugins=babel-plugin-transform-bigint test.js
+npx babel --plugins=babel-plugin-transform-bigint test.js > test-transformed.js
 ```
 
-3. import `runtime.js`.
+3. create a file `test.html`.
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="node_modules/big-integer/BigInteger.js"></script>
+  <script src="node_modules/babel-plugin-transform-bigint/runtime.js"></script>
+  <script src="test-transformed.js"></script>
+</head>
+<body>
+  See the console output.
+</body>
+</html>
+```
+
+4. Open `test.html` in a web browser, see the console output.
