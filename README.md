@@ -50,14 +50,14 @@ function squareRoot(value, decimalDigits) {
 ```
 
 2. Use babel:
-```
+```sh
 npm install --save https://github.com/Yaffle/babel-plugin-transform-bigint
 npm install --save-dev @babel/core @babel/cli
 npx babel --plugins=babel-plugin-transform-bigint test.js > test-transformed.js
 ```
 
 3. create a file `test.html`.
-```
+```html
 <!DOCTYPE html>
 <html>
 <head>
