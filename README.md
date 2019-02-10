@@ -1,6 +1,8 @@
 # babel-plugin-transform-bigint
 
 *Update:* Now it can convert a code using BigInt into a code using JSBI (https://github.com/GoogleChromeLabs/jsbi).
+It will try to detect when an operator is used for bigints, not numbers. This will not work in many cases, so please use JSBI directly only 
+if you know, that the code works only with bigints.
 
 An example from https://github.com/GoogleChromeLabs/babel-plugin-transform-jsbi-to-bigint:
 ==========================================================================================
