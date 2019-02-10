@@ -1,5 +1,68 @@
 # babel-plugin-transform-bigint
 
+*Update:* Now it can convert a code using BigInt into a code using JSBI (https://github.com/GoogleChromeLabs/jsbi).
+
+An example from https://github.com/GoogleChromeLabs/babel-plugin-transform-jsbi-to-bigint:
+==========================================================================================
+
+Input using native `BigInt`s:
+
+```javascript
+const a = BigInt(Number.MAX_SAFE_INTEGER);
+const b = 2n;
+
+a + b;
+a - b;
+a * b;
+a / b;
+a % b;
+a ** b;
+a << b;
+a >> b;
+a & b;
+a | b;
+a ^ b;
+
+-a;
+~a;
+
+a === b;
+a < b;
+a <= b;
+a > b;
+a >= b;
+
+a.toString();
+Number(a);
+```
+
+Compiled output using `JSBI`:
+
+```
+const a = JSBI.BigInt(Number.MAX_SAFE_INTEGER);
+const b = JSBI.BigInt(2);
+JSBI.add(a, b);
+JSBI.subtract(a, b);
+JSBI.multiply(a, b);
+JSBI.divide(a, b);
+JSBI.remainder(a, b);
+JSBI.exponentiate(a, b);
+JSBI.leftShift(a, b);
+JSBI.signedRightShift(a, b);
+JSBI.bitwiseAnd(a, b);
+JSBI.bitwiseOr(a, b);
+JSBI.bitwiseXor(a, b);
+JSBI.unaryMinus(a);
+JSBI.bitwiseNot(a);
+JSBI.equal(a, b);
+JSBI.lessThan(a, b);
+JSBI.lessThanOrEqual(a, b);
+JSBI.greaterThan(a, b);
+JSBI.greaterThanOrEqual(a, b);
+a.toString();
+JSBI.toNumber(a);
+```
+
 ¡ It is buggy !
 
 Usage:

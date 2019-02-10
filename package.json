@@ -9,8 +9,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@babel/core": "^7.0.0-beta.51",
-    "@babel/plugin-syntax-bigint": "^7.0.0-beta.51",
-    "big-integer": "^1.6.31"
-  }
+    "@babel/plugin-syntax-bigint": "^7.2.0",
+    "big-integer": "^1.6.41"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2"
+  },
+  "keywords": [
+    "babel-plugin",
+    "bigint"
+  ]
 }

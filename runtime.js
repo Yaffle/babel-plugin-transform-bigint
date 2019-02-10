@@ -1,6 +1,8 @@
+
+(function (global) {
 'use strict';
 
-// import bigInt from 'big-integer';
+//import bigInt from 'big-integer';
 
 const fromString = function (string) {
   string = string.trim();
@@ -138,43 +140,45 @@ const unaryValue = function (notValue, valueValue) {
   return unary(notValue, (x) => new BigInt(valueValue(x)));
 };
 
-const _add = binaryValue((x, y) => x + y, (x, y) => x.add(y));
-const _sub = binaryValue((x, y) => x - y, (x, y) => x.subtract(y));
-const _mul = binaryValue((x, y) => x * y, (x, y) => x.multiply(y));
-const _div = binaryValue((x, y) => x / y, (x, y) => x.divide(y));
-const _rem = binaryValue((x, y) => x % y, (x, y) => x.remainder(y));
-const _pow = binaryValue((x, y) => x**y, (x, y) => x.pow(y));
-
-const _shl = binaryValue((x, y) => x << y, (x, y) => x.shiftLeft(y.toJSNumber()));
-const _shr = binaryValue((x, y) => x >> y, (x, y) => x.shiftRight(y.toJSNumber()));
-const _ushr = binaryValue((x, y) => x >>> y, (x, y) => { throw new TypeError() });
-
-const _and = binaryValue((x, y) => x & y, (x, y) => x.and(y));
-const _or = binaryValue((x, y) => x | y, (x, y) => x.or(y));
-const _xor = binaryValue((x, y) => x ^ y, (x, y) => x.xor(y));
-
-const _lt = nonStrictRelational((x, y) => x < y, (x, y) => x.compareTo(y) < 0);
-const _gt = nonStrictRelational((x, y) => x > y, (x, y) => x.compareTo(y) > 0);
-const _le = nonStrictRelational((x, y) => x <= y, (x, y) => x.compareTo(y) <= 0);
-const _ge = nonStrictRelational((x, y) => x >= y, (x, y) => x.compareTo(y) >= 0);
-const _eq = nonStrictRelational((x, y) => x == y, (x, y) => x.compareTo(y) === 0);
-const _ne = nonStrictRelational((x, y) => x != y, (x, y) => x.compareTo(y) !== 0);
-
-const _seq = strictRelational((x, y) => x === y, (x, y) => x.compareTo(y) === 0);
-const _sne = strictRelational((x, y) => x !== y, (x, y) => x.compareTo(y) !== 0);
-
-const _typeof = unary((x) => typeof x, (x) => 'bigint');
-const _neg = unaryValue((x) => -x, (x) => x.negate());
-const _not = unaryValue((x) => ~x, (x) => x.not());
-
-const _inc = unaryValue((x) => ++x, (x) => x.next());
-const _dec = unaryValue((x) => --x, (x) => x.prev());
-
-const _update = function (object, property, f, prefix) {
-  const oldValue = object[property];
-  const newValue = f(oldValue);
-  object[property] = newValue;
-  return prefix ? newValue : oldValue;
+function BigIntRuntime() {
+}
+BigIntRuntime.BigInt = function (value) {
+  return BigInt(value);
+};
+BigIntRuntime.toNumber = function (bigint) {
+  return bigint.value.toJSNumber();
 };
 
-//export default { BigInt, _add, _sub, _mul, _div, _rem, _pow, _shl, _shr, _ushr, _and, _or, _xor, _lt, _gt, _le, _ge, _eq, _ne, _seq, _sne, _typeof, _neg, _not, _inc, _dec, _update };
+BigIntRuntime.add = binaryValue((x, y) => x + y, (x, y) => x.add(y));
+BigIntRuntime.subtract = binaryValue((x, y) => x - y, (x, y) => x.subtract(y));
+BigIntRuntime.multiply = binaryValue((x, y) => x * y, (x, y) => x.multiply(y));
+BigIntRuntime.divide = binaryValue((x, y) => x / y, (x, y) => x.divide(y));
+BigIntRuntime.remainder = binaryValue((x, y) => x % y, (x, y) => x.remainder(y));
+BigIntRuntime.exponentiate = binaryValue((x, y) => x**y, (x, y) => x.pow(y));
+
+BigIntRuntime.leftShift = binaryValue((x, y) => x << y, (x, y) => x.shiftLeft(y.toJSNumber()));
+BigIntRuntime.signedRightShift = binaryValue((x, y) => x >> y, (x, y) => x.shiftRight(y.toJSNumber()));
+//const _ushr = binaryValue((x, y) => x >>> y, (x, y) => { throw new TypeError() });
+
+BigIntRuntime.bitwiseAnd = binaryValue((x, y) => x & y, (x, y) => x.and(y));
+BigIntRuntime.bitwiseOr = binaryValue((x, y) => x | y, (x, y) => x.or(y));
+BigIntRuntime.bitwiseXor = binaryValue((x, y) => x ^ y, (x, y) => x.xor(y));
+
+BigIntRuntime.lessThan = nonStrictRelational((x, y) => x < y, (x, y) => x.compareTo(y) < 0);
+BigIntRuntime.greaterThan = nonStrictRelational((x, y) => x > y, (x, y) => x.compareTo(y) > 0);
+BigIntRuntime.lessThanOrEqual = nonStrictRelational((x, y) => x <= y, (x, y) => x.compareTo(y) <= 0);
+BigIntRuntime.greaterThanOrEqual = nonStrictRelational((x, y) => x >= y, (x, y) => x.compareTo(y) >= 0);
+BigIntRuntime.equal = nonStrictRelational((x, y) => x == y, (x, y) => x.compareTo(y) === 0);
+//const _ne = nonStrictRelational((x, y) => x != y, (x, y) => x.compareTo(y) !== 0);
+
+//const _seq = strictRelational((x, y) => x === y, (x, y) => x.compareTo(y) === 0);
+//const _sne = strictRelational((x, y) => x !== y, (x, y) => x.compareTo(y) !== 0);
+
+//const _typeof = unary((x) => typeof x, (x) => 'bigint');
+BigIntRuntime.unaryMinus = unaryValue((x) => -x, (x) => x.negate());
+BigIntRuntime.bitwiseNot = unaryValue((x) => ~x, (x) => x.not());
+
+//export default BigIntRuntime;
+global.JSBI = BigIntRuntime;
+
+}(this));
