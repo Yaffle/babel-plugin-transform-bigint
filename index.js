@@ -200,8 +200,8 @@ module.exports = function (babel) {
                 // object[property] += right -> (x = object, y = property, x[y] = x[y] + right)
                 path.replaceWith(types.sequenceExpression([
                   types.assignmentExpression('=', x, left.object),
-                  types.assignmentExpression('=', y, left.property),
-                  types.assignmentExpression('=', types.memberExpression(x, y), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y), right]))
+                  types.assignmentExpression('=', y, types.StringLiteral(left.property.name)),
+                  types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), right]))
                 ]));
               } else {
                 // left += right -> (left = left + right)
