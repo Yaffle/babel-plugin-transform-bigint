@@ -147,8 +147,8 @@ module.exports = function (babel) {
                 // ++object[property] -> (x = object, y = property, x[y] = x[y] + 1)
                 path.replaceWith(types.sequenceExpression([
                   types.assignmentExpression('=', x, argument.object),
-                  types.assignmentExpression('=', y, argument.property),
-                  types.assignmentExpression('=', types.memberExpression(x, y), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y), one]))
+                  types.assignmentExpression('=', y, argument.computed ? argument.property : types.StringLiteral(argument.property.name)),
+                  types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), one]))
                 ]));
               } else {
                 const x = path.scope.generateUidIdentifier('x');
@@ -160,9 +160,9 @@ module.exports = function (babel) {
                 // object[property]++ -> (x = object, y = property, z = x[y], x[y] = x[y] + 1, z)
                 path.replaceWith(types.sequenceExpression([
                   types.assignmentExpression('=', x, argument.object),
-                  types.assignmentExpression('=', y, argument.property),
-                  types.assignmentExpression('=', z, types.memberExpression(x, y)),
-                  types.assignmentExpression('=', types.memberExpression(x, y), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [z, one])),
+                  types.assignmentExpression('=', y, argument.computed ? argument.property : types.StringLiteral(argument.property.name)),
+                  types.assignmentExpression('=', z, types.memberExpression(x, y, true)),
+                  types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [z, one])),
                   z
                 ]));
               }
@@ -200,7 +200,7 @@ module.exports = function (babel) {
                 // object[property] += right -> (x = object, y = property, x[y] = x[y] + right)
                 path.replaceWith(types.sequenceExpression([
                   types.assignmentExpression('=', x, left.object),
-                  types.assignmentExpression('=', y, types.StringLiteral(left.property.name)),
+                  types.assignmentExpression('=', y, left.computed ? left.property : types.StringLiteral(left.property.name)),
                   types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), right]))
                 ]));
               } else {
