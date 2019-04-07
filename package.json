@@ -19,5 +19,6 @@
   "keywords": [
     "babel-plugin",
     "bigint"
-  ]
+  ],
+  "repository": "github.com:Yaffle/babel-plugin-transform-bigint"
 }
