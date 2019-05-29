@@ -65,9 +65,18 @@ a.toString();
 JSBI.toNumber(a);
 ```
 
+Playground:
+===========
+1. Open https://babeljs.io/en/repl
+2. Turn off all presets.
+3. "Add plugin" @babel/babel-plugin-syntax-bigint
+4. "Add plugin" babel-plugin-transform-bigint
+
+
 ¡ It is buggy !
 
-Usage:
+Example:
+========
 
 1. Create a file test.js:
 ```javascript
