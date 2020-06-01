@@ -66,6 +66,9 @@ module.exports = function (babel) {
     if (path.node.type === 'NumericLiteral') {
       return false;
     }
+    if (path.node.type === 'StringLiteral') {
+      return false;
+    }
     if (path.node.type === 'BinaryExpression') {
       return canBeBigInt(path.get('left')) && canBeBigInt(path.get('right'));
     }
@@ -75,6 +78,12 @@ module.exports = function (babel) {
     if (path.node.type === 'Identifier') {
       const binding = path.scope.getBinding(path.node.name);
       if (binding != null) {
+        if (binding.path.node.type === 'VariableDeclarator') {
+          const x = binding.path.get('init');
+          if (x.node != null && !canBeBigInt(x)) {
+            return false;
+          }
+        }
         for (const path of binding.referencePaths) {
           if (!canBeBigInt(path.parentPath)) {
             return false;
@@ -82,6 +91,9 @@ module.exports = function (babel) {
         }
       }
       return true;
+    }
+    if (path.node.type === 'ConditionalExpression') {
+      return canBeBigInt(path.get('consequent')) || canBeBigInt(path.get('alternate'));
     }
     //TODO:
     return true;
