@@ -70,6 +70,9 @@ module.exports = function (babel) {
     if (path.node.type === 'StringLiteral') {
       return false;
     }
+    if (path.node.type === 'UnaryExpression') {
+      return canBeBigInt(path.get('argument'));
+    }
     if (path.node.type === 'BinaryExpression') {
       return canBeBigInt(path.get('left')) && canBeBigInt(path.get('right'));
     }
@@ -95,6 +98,21 @@ module.exports = function (babel) {
     }
     if (path.node.type === 'ConditionalExpression') {
       return canBeBigInt(path.get('consequent')) || canBeBigInt(path.get('alternate'));
+    }
+    if (path.node.type === 'FunctionExpression') {
+      return false;
+    }
+    if (path.node.type === 'NewExpression') {
+      return false;
+    }
+    if (path.node.type === 'NullLiteral') {
+      return false;
+    }
+    if (path.node.type === 'LogicalExpression') {
+      return false;//?
+    }
+    if (path.node.type === 'ObjectProperty') {
+      return false;//?
     }
     //TODO:
     return true;
