@@ -31,6 +31,7 @@ module.exports = function (babel) {
       case '<=': return 'lessThanOrEqual';
       case '>=': return 'greaterThanOrEqual';
       case '===': return 'equal';
+      case '!==': return 'notEqual';
     }
     return null;
   };
