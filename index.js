@@ -90,7 +90,7 @@ module.exports = function (babel) {
         }
         for (const path of binding.referencePaths) {
           if (!canBeBigInt(path.parentPath)) {
-            return false;
+            //return false;
           }
         }
       }
@@ -113,6 +113,31 @@ module.exports = function (babel) {
     }
     if (path.node.type === 'ObjectProperty') {
       return false;//?
+    }
+    if (path.node.type === 'CallExpression') {
+      if (path.node.callee.type === 'MemberExpression' &&
+          path.node.callee.object.type === 'Identifier' &&
+          path.node.callee.object.name === 'Math') {
+        return false;
+      }
+    }
+    if (path.node.type === 'CallExpression') {
+      if (path.node.callee.type === 'Identifier') {
+        const binding = path.scope.getBinding(path.node.callee.name);
+        if (binding != null) {
+          if (binding.path.node.type === 'FunctionDeclaration') {
+            const statements = binding.path.get('body').get('body');
+            for (const statement of statements) {
+              if (statement.type === 'ReturnStatement') {
+                if (!canBeBigInt(statement.get('argument'))) {
+                  //console.log(path.node.callee.name);
+                  return false;
+                }
+              }
+            }
+          }
+        }
+      }
     }
     //TODO:
     return true;
