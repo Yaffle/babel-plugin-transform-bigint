@@ -120,6 +120,10 @@ module.exports = function (babel) {
           path.node.callee.object.name === 'Math') {
         return false;
       }
+      if (path.node.callee.type === 'Identifier' &&
+          path.node.callee.name === 'Number') {
+        return false;
+      }
     }
     if (path.node.type === 'CallExpression') {
       if (path.node.callee.type === 'Identifier') {
