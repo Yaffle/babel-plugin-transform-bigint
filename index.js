@@ -93,6 +93,10 @@ module.exports = function (babel) {
             //return false;
           }
         }
+      } else {
+        if (path.node.name === 'undefined') {
+          return false;
+        }
       }
       return true;
     }
