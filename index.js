@@ -148,13 +148,16 @@ module.exports = function (babel) {
   };
 
   const JSBI = 'JSBI';
+  const IMPORT_PATH = './jsbi.mjs';
 
   return {
     inherits: syntaxBigInt,
     visitor: {
       CallExpression: function (path, state) {
         if (path.node.callee.name === 'Number') {
-          path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier('toNumber')), path.node.arguments));
+          if (canBeBigInt(path.get('arguments')[0])) {
+            path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier('toNumber')), path.node.arguments));
+          }
         }
         if (path.node.callee.name === 'BigInt') {
           path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier('BigInt')), path.node.arguments));
@@ -270,6 +273,13 @@ module.exports = function (babel) {
             }
           }
         }
+      },
+      Program: function (path) {
+        // https://stackoverflow.com/a/35994497
+        const identifier = types.identifier(JSBI);
+        const importDefaultSpecifier = types.importDefaultSpecifier(identifier);
+        const importDeclaration = types.importDeclaration([importDefaultSpecifier], types.stringLiteral(IMPORT_PATH));
+        path.unshiftContainer('body', importDeclaration);
       }
     }
   };

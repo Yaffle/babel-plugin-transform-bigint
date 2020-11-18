@@ -4,7 +4,7 @@
   "description": "A plugin for babel to transform `x * y` into something like `JSBI.multiply(x, y)` to support bigints.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx babel --plugins=./index.js tests.js"
   },
   "author": "",
   "license": "ISC",
