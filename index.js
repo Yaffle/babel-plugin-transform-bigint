@@ -55,14 +55,30 @@ module.exports = function (babel) {
     if (visited.get(path) != null) {
       return visited.get(path);
     }
-    visited.set(path, true);
+    visited.set(path, maybeJSBI);
     const result = canBeBigIntInternal(path);
-    visited.set(path, result);
+    if (result === maybeJSBI) {
+      visited.delete(path);
+    } else {
+      visited.set(path, result);
+    }
     return result;
+  };
+  const and = function (a, b) {
+    if (a === maybeJSBI) {
+      return b;
+    }
+    if (b === maybeJSBI) {
+      return a;
+    }
+    if (a === JSBI && b === JSBI) {
+      return JSBI;
+    }
+    return false;
   };
   const canBeBigIntInternal = function (path) {
     if (path.node.type === 'BigIntLiteral') {
-      return true;
+      return JSBI;
     }
     if (path.node.type === 'NumericLiteral') {
       return false;
@@ -74,23 +90,23 @@ module.exports = function (babel) {
       return canBeBigInt(path.get('argument'));
     }
     if (path.node.type === 'BinaryExpression') {
-      return canBeBigInt(path.get('left')) && canBeBigInt(path.get('right'));
+      return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
     if (path.node.type === 'AssignmentExpression') {
-      return canBeBigInt(path.get('left')) && canBeBigInt(path.get('right'));
+      return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
     if (path.node.type === 'Identifier') {
       const binding = path.scope.getBinding(path.node.name);
       if (binding != null) {
         if (binding.path.node.type === 'VariableDeclarator') {
           const x = binding.path.get('init');
-          if (x.node != null && !canBeBigInt(x)) {
+          if (x.node != null && canBeBigInt(x) === false) {
             return false;
           }
         }
         for (const path of binding.referencePaths) {
-          if (!canBeBigInt(path.parentPath)) {
-            //return false;
+          if (path.parentPath.node.type === 'BinaryExpression' && getFunctionName(path.parentPath.node.operator) != null && canBeBigInt(path.parentPath) === false) {
+            return false;
           }
         }
       } else {
@@ -98,10 +114,37 @@ module.exports = function (babel) {
           return false;
         }
       }
-      return true;
+      if (binding != null && binding.constant) {
+        const ifStatement = path.findParent(path => path.isIfStatement());
+        const variableName = path.node.name;
+        if (ifStatement != null) {
+          const tmp = ifStatement.get('test');
+          if (tmp.node.operator === '&&') {
+            const checkTypeOf = function (node) {
+              if (node.type === 'BinaryExpression' && node.operator === '===') {
+                if (node.left.type === 'UnaryExpression' && node.left.operator === 'typeof') {
+                  if (node.left.argument.type === 'Identifier' && node.left.argument.name === variableName) {
+                    if (node.right.type === 'StringLiteral' && node.right.value === 'number') {
+                      return true;
+                    }
+                  }
+                }
+              }
+              return false;
+            };
+            if (checkTypeOf(tmp.node.left)) {
+              return false;
+            }
+            if (checkTypeOf(tmp.node.right)) {
+              return false;
+            }
+          }
+        }
+      }
+      return maybeJSBI;
     }
     if (path.node.type === 'ConditionalExpression') {
-      return canBeBigInt(path.get('consequent')) || canBeBigInt(path.get('alternate'));
+      return canBeBigInt(path.get('consequent')) !== false || canBeBigInt(path.get('alternate')) !== false ? maybeJSBI : false;
     }
     if (path.node.type === 'FunctionExpression') {
       return false;
@@ -128,6 +171,10 @@ module.exports = function (babel) {
           path.node.callee.name === 'Number') {
         return false;
       }
+      if (path.node.callee.type === 'Identifier' &&
+          path.node.callee.name === 'BigInt') {
+        return JSBI;
+      }
     }
     if (path.node.type === 'CallExpression') {
       if (path.node.callee.type === 'Identifier') {
@@ -137,8 +184,7 @@ module.exports = function (babel) {
             const statements = binding.path.get('body').get('body');
             for (const statement of statements) {
               if (statement.type === 'ReturnStatement') {
-                if (!canBeBigInt(statement.get('argument'))) {
-                  //console.log(path.node.callee.name);
+                if (canBeBigInt(statement.get('argument')) === false) {
                   return false;
                 }
               }
@@ -147,19 +193,94 @@ module.exports = function (babel) {
         }
       }
     }
+    if (path.node.type === 'UpdateExpression') {
+      return canBeBigInt(path.get('argument'));
+    }
     //TODO:
-    return true;
+    return maybeJSBI;
   };
 
   const JSBI = 'JSBI';
+  const maybeJSBI = 'maybeJSBI';
+  //const maybeJSBI = JSBI;
   const IMPORT_PATH = './jsbi.mjs';
+
+  const maybeJSBICode = `
+var maybeJSBI = {
+  BigInt: function BigInt(a) {
+    return JSBI.BigInt(a);
+  },
+  toNumber: function toNumber(a) {
+    return typeof a === "object" ? JSBI.toNumber(a) : Number(a);
+  },
+  add: function add(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.add(a, b) : a + b;
+  },
+  subtract: function subtract(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.subtract(a, b) : a - b;
+  },
+  multiply: function multiply(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.multiply(a, b) : a * b;
+  },
+  divide: function divide(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.divide(a, b) : a / b;
+  },
+  remainder: function remainder(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.remainder(a, b) : a % b;
+  },
+  exponentiate: function exponentiate(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.exponentiate(a, b) : (typeof a === "bigint" && typeof b === "bigint" ? new Function("a**b", "a", "b")(a, b) : Math.pow(a, b));
+  },
+  leftShift: function leftShift(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.leftShift(a, b) : a << b;
+  },
+  signedRightShift: function signedRightShift(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.signedRightShift(a, b) : a >> b;
+  },
+  bitwiseAnd: function bitwiseAnd(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.bitwiseAnd(a, b) : a & b;
+  },
+  bitwiseOr: function bitwiseOr(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.bitwiseOr(a, b) : a | b;
+  },
+  bitwiseXor: function bitwiseXor(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.bitwiseXor(a, b) : a ^ b;
+  },
+  lessThan: function lessThan(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.lessThan(a, b) : a < b;
+  },
+  greaterThan: function greaterThan(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.greaterThan(a, b) : a > b;
+  },
+  lessThanOrEqual: function lessOrEqualThan(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.lessThanOrEqual(a, b) : a <= b;
+  },
+  greaterThanOrEqual: function greaterOrEqualThan(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.greaterThanOrEqual(a, b) : a >= b;
+  },
+  equal: function equal(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.equal(a, b) : a === b;
+  },
+  notEqual: function notEqual(a, b) {
+    return typeof a === "object" && typeof b === "object" ? JSBI.notEqual(a, b) : a !== b;
+  },
+  unaryMinus: function unaryMinus(a) {
+    return typeof a === "object" ? JSBI.unaryMinus(a) : -a;
+  },
+  bitwiseNot: function bitwiseNot(a) {
+    return typeof a === "object" ? JSBI.bitwiseNot(a) : ~a;
+  }
+};
+  `;
+  //const maybeJSBICode = '';
 
   return {
     inherits: syntaxBigInt,
     visitor: {
       CallExpression: function (path, state) {
         if (path.node.callee.name === 'Number') {
-          if (canBeBigInt(path.get('arguments')[0])) {
+          const JSBI = canBeBigInt(path.get('arguments')[0]);
+          if (JSBI !== false) {
             path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier('toNumber')), path.node.arguments));
           }
         }
@@ -179,7 +300,8 @@ module.exports = function (babel) {
         }
       },
       BinaryExpression: function (path, state) {
-        if (canBeBigInt(path)) {
+        const JSBI = canBeBigInt(path);
+        if (JSBI !== false) {
           const operator = path.node.operator;
           const functionName = getFunctionName(operator) || getRelationalFunctionName(operator);
           if (functionName != null) {
@@ -189,7 +311,8 @@ module.exports = function (babel) {
         }
       },
       UnaryExpression: function (path, state) {
-        if (canBeBigInt(path)) {
+        const JSBI = canBeBigInt(path);
+        if (JSBI !== false) {
           const functionName = getUnaryFunctionName(path.node.operator);
           if (functionName !== null) {
             // -x -> JSBI.unaryMinus(x)
@@ -198,7 +321,8 @@ module.exports = function (babel) {
         }
       },  
       UpdateExpression: function (path, state) {
-        if (canBeBigInt(path)) {
+        const JSBI = canBeBigInt(path);
+        if (JSBI !== false) {
           const operator = path.node.operator;
           const prefix = path.node.prefix;
           const functionName = getUpdateFunctionName(operator);
@@ -252,7 +376,8 @@ module.exports = function (babel) {
         }
       },
       AssignmentExpression: function (path, state) {
-        if (canBeBigInt(path)) {
+        const JSBI = canBeBigInt(path);
+        if (JSBI !== false) {
           const operator = path.node.operator;
           if (operator.endsWith('=')) {
             const functionName = getFunctionName(operator.slice(0, -'='.length));
@@ -285,6 +410,10 @@ module.exports = function (babel) {
         const importDeclaration = types.importDeclaration([importDefaultSpecifier], types.stringLiteral(IMPORT_PATH));
         path.unshiftContainer('body', importDeclaration);
       }
+    },
+    post: function (state) {
+      //console.log(state);
+      state.ast.program.body.unshift(babel.parse(maybeJSBICode).program.body[0]);
     }
   };
 };
