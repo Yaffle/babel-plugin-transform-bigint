@@ -207,9 +207,6 @@ module.exports = function (babel) {
 
   const maybeJSBICode = `
 var maybeJSBI = {
-  BigInt: function BigInt(a) {
-    return JSBI.BigInt(a);
-  },
   toNumber: function toNumber(a) {
     return typeof a === "object" ? JSBI.toNumber(a) : Number(a);
   },
@@ -286,6 +283,12 @@ var maybeJSBI = {
         }
         if (path.node.callee.name === 'BigInt') {
           path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier('BigInt')), path.node.arguments));
+        }
+        if (path.node.callee.type === 'MemberExpression' &&
+            path.node.callee.object.type === 'Identifier' &&
+            path.node.callee.object.name === 'BigInt' &&
+            path.node.callee.property.name === 'asUintN') {
+          path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier('asUintN')), path.node.arguments));
         }
       },
       BigIntLiteral: function (path, state) {

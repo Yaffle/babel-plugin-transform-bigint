@@ -52,3 +52,6 @@ if (g3 < 1) {
   console.log(g3);
 }
 
+
+var g4 = 1n;
+BigInt.asUintN(10, g4)
