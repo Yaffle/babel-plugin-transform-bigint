@@ -1,4 +1,4 @@
-// to run the test use a command: `npx babel --plugins=./index.js tests.js`
+// to run the test use a command: `npx babel --plugins=module:./index.js tests.js`
 
 o.x.y += b;
 o.x['y'] += b;
@@ -33,3 +33,22 @@ _x11 = o.x, _y11 = y, _z3 = _x11[_y11], _x11[_y11] = JSBI.add(_z3, JSBI.BigInt(1
 _x12 = o.x, _y12 = JSBI.add(y, z), _z4 = _x12[_y12], _x12[_y12] = JSBI.add(_z4, JSBI.BigInt(1)), _z4;
 
 */
+
+
+var g1 = 1;
+g1 = 1n;
+if (g1 === 1n) {
+  console.log(g1);
+}
+
+
+var g2 = 1n;
+if (g2 == 1) {
+  console.log(g2);
+}
+
+var g3 = 1n;
+if (g3 < 1) {
+  console.log(g3);
+}
+
