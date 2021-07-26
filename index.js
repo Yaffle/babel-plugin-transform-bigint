@@ -87,6 +87,9 @@ module.exports = function (babel) {
       return false;
     }
     if (path.node.type === 'UnaryExpression') {
+      if (path.node.operator === '+') { // +0n is not allowed
+        return false;
+      }
       return canBeBigInt(path.get('argument'));
     }
     if (path.node.type === 'BinaryExpression') {
@@ -105,9 +108,10 @@ module.exports = function (babel) {
           }
         }
         for (const path of binding.referencePaths) {
-          if (path.parentPath.node.type === 'BinaryExpression' && getFunctionName(path.parentPath.node.operator) != null && canBeBigInt(path.parentPath) === false) {
-            return false;
-          }
+          //The next code causes infinite recursion, seems:
+          //if (path.parentPath.node.type === 'BinaryExpression' && getFunctionName(path.parentPath.node.operator) != null && canBeBigInt(path.parentPath) === false) {
+          //  return false;
+          //}
         }
       } else {
         if (path.node.name === 'undefined') {
@@ -175,6 +179,11 @@ module.exports = function (babel) {
           path.node.callee.name === 'BigInt') {
         return JSBI;
       }
+      //if (path.node.callee.type === 'MemberExpression' &&
+      //    path.node.callee.object.type === 'Identifier' &&
+      //    path.node.callee.object.name === 'JSBI') {
+      //  return JSBI;
+      //}
     }
     if (path.node.type === 'CallExpression') {
       if (path.node.callee.type === 'Identifier') {
