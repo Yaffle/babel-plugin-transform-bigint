@@ -9,13 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@babel/plugin-syntax-bigint": "^7.8.3",
-    "big-integer": "^1.6.48"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.12.10",
-    "@babel/core": "^7.12.10",
-    "jest": "^27.0.6"
+    "@babel/plugin-syntax-bigint": "^7.8.3"
   },
   "keywords": [
     "babel-plugin",
@@ -29,5 +23,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Yaffle/babel-plugin-transform-bigint.git"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.14.8",
+    "@babel/core": "^7.14.8",
+    "jest": "^27.0.6"
   }
 }
