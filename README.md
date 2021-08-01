@@ -78,7 +78,8 @@ Playground:
 Example:
 ========
 
-1. Create a file test.js:
+1. Create a folder "example".
+2. Create a file test.js:
 ```javascript
 // floor(log2(n)), n >= 1
 function ilog2(n) {
@@ -122,35 +123,41 @@ function squareRoot(value, decimalDigits) {
 
 ```
 
-2. Use babel:
+3. Use babel:
 ```sh
+npm init
 npm install --save https://github.com/Yaffle/babel-plugin-transform-bigint
 npm install --save-dev @babel/core @babel/cli
+npm install jsbi --save
+npm install --global http-server
 npx babel --plugins=babel-plugin-transform-bigint test.js > test-transformed.js
+http-server -p 8081
 ```
 
-3. create a file `test.html`.
+4. Comment out the next line in test-transformed.js:
+```javascript
+import JSBI from "./jsbi.mjs";
+```
+
+5. Create a file `test.html`.
 ```html
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <script src="node_modules/big-integer/BigInteger.js"></script>
-  <script src="node_modules/babel-plugin-transform-bigint/runtime.js"></script>
+  <script src="./node_modules/jsbi/dist/jsbi-umd.js"></script>
   <script src="test-transformed.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function (event) {
       const form = document.querySelector("form");
-      const update = function () {
+      form.oninput = function () {
         const value = form.value.value;
         const digits = Number(form.digits.value);
         const s = squareRoot(value, digits);
-        form.output.value = '√' + value +  ' ≈ ' + s.slice(0, 0 - digits - 1) + '.' + s.slice(0 - digits - 1, -1) + '…';
+        // IE 11 does not support <output> element, so `form.output.value = "value";` is not working.
+        form.querySelector("output").textContent = '√' + value +  ' ≈ ' + s.slice(0, 0 - digits - 1) + '.' + s.slice(0 - digits - 1, -1) + '…';
       };
-      form.oninput = function () {
-        update();
-      };
-      update();
+      form.oninput();
     }, false);
   </script>
   <style>
@@ -177,4 +184,4 @@ npx babel --plugins=babel-plugin-transform-bigint test.js > test-transformed.js
 </html>
 ```
 
-4. Open `test.html` in a web browser.
+6. Open `http://127.0.0.1:8081/test.html` in a web browser.
