@@ -258,10 +258,10 @@ var maybeJSBI = {
   greaterThan: function greaterThan(a, b) {
     return typeof a === "object" && typeof b === "object" ? JSBI.greaterThan(a, b) : a > b;
   },
-  lessThanOrEqual: function lessOrEqualThan(a, b) {
+  lessThanOrEqual: function lessThanOrEqual(a, b) {
     return typeof a === "object" && typeof b === "object" ? JSBI.lessThanOrEqual(a, b) : a <= b;
   },
-  greaterThanOrEqual: function greaterOrEqualThan(a, b) {
+  greaterThanOrEqual: function greaterThanOrEqual(a, b) {
     return typeof a === "object" && typeof b === "object" ? JSBI.greaterThanOrEqual(a, b) : a >= b;
   },
   equal: function equal(a, b) {
