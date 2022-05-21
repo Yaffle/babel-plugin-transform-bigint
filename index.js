@@ -104,11 +104,20 @@ module.exports = function (babel) {
       if (binding != null) {
         if (binding.path.node.type === 'VariableDeclarator') {
           const x = binding.path.get('init');
-          if (x.node != null && canBeBigInt(x) === false && binding.constant) {
-            return false;
-          }
-          if (x.node != null && canBeBigInt(x) === JSBI && binding.constant) {
-            return JSBI;
+          if (x.node != null) {
+            const X = canBeBigInt(x);
+            if ((X === false || X === JSBI) && binding.constant) {
+              return X;
+            }
+            if ((X === false || X === JSBI) && !binding.constant) {
+              let allAssignmentsHaveSameType = true;
+              for (const path of binding.constantViolations) {
+                allAssignmentsHaveSameType = allAssignmentsHaveSameType && canBeBigInt(path) === X;
+              }
+              if (allAssignmentsHaveSameType) {
+                return X;
+              }
+            }
           }
         }
         for (const path of binding.referencePaths) {

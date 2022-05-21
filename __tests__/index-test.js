@@ -148,3 +148,15 @@ it('typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/narrow
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+it('it does not mutable variables', function () {
+  const example = `
+    function f() {
+      for (let i = 0; i < 10; i += 1) {
+        console.log(i * i);
+      }
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
