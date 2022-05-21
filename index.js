@@ -279,7 +279,7 @@ var maybeJSBI = {
     return typeof a === "object" && typeof b === "object" ? JSBI.remainder(a, b) : a % b;
   },
   exponentiate: function exponentiate(a, b) {
-    return typeof a === "object" && typeof b === "object" ? JSBI.exponentiate(a, b) : (typeof a === "bigint" && typeof b === "bigint" ? new Function("a**b", "a", "b")(a, b) : Math.pow(a, b));
+    return typeof a === "object" && typeof b === "object" ? JSBI.exponentiate(a, b) : (typeof a === "bigint" && typeof b === "bigint" ? new Function("a", "b", "return a**b")(a, b) : Math.pow(a, b));
   },
   leftShift: function leftShift(a, b) {
     return typeof a === "object" && typeof b === "object" ? JSBI.leftShift(a, b) : a << b;
