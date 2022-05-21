@@ -1,5 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`BigInt.asUintN(64, a), BigInt.asIntN(64, a) 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+const a = JSBI.BigInt(1);
+console.log(JSBI.asUintN(64, a));
+console.log(JSBI.asIntN(64, a));"
+`;
+
 exports[`BigInt.asUintN(n, a) is replaced 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 const g = JSBI.BigInt(1);

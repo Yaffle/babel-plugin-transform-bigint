@@ -107,3 +107,13 @@ it('works', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+it('BigInt.asUintN(64, a), BigInt.asIntN(64, a)', function () {
+  const example = `
+    const a = 1n;
+    console.log(BigInt.asUintN(64, a));
+    console.log(BigInt.asIntN(64, a));
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});

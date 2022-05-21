@@ -301,8 +301,8 @@ var maybeJSBI = {
         if (path.node.callee.type === 'MemberExpression' &&
             path.node.callee.object.type === 'Identifier' &&
             path.node.callee.object.name === 'BigInt' &&
-            path.node.callee.property.name === 'asUintN') {
-          path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier('asUintN')), path.node.arguments));
+            (path.node.callee.property.name === 'asUintN' || path.node.callee.property.name === 'asIntN')) {
+          path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(path.node.callee.property.name)), path.node.arguments));
         }
       },
       BigIntLiteral: function (path, state) {
