@@ -149,7 +149,7 @@ it('typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/narrow
   expect(code).toMatchSnapshot();
 });
 
-it('it does not mutable variables', function () {
+it('it does not replace expression for a mutable variable', function () {
   const example = `
     function f() {
       for (let i = 0; i < 10; i += 1) {
@@ -161,7 +161,7 @@ it('it does not mutable variables', function () {
   expect(code).toMatchSnapshot();
 });
 
-it('it does not mutable variables2', function () {
+it('it does not replace expression for a mutable variable2', function () {
   const example = `
     function f() {
       let i = 1;

@@ -13,7 +13,7 @@ const g = JSBI.BigInt(1);
 JSBI.asUintN(10, g);"
 `;
 
-exports[`it does not mutable variables 1`] = `
+exports[`it does not replace expression for a mutable variable 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 
 function f() {
@@ -23,7 +23,7 @@ function f() {
 }"
 `;
 
-exports[`it does not mutable variables2 1`] = `
+exports[`it does not replace expression for a mutable variable2 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 
 function f() {

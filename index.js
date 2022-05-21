@@ -97,7 +97,10 @@ module.exports = function (babel) {
       return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
     if (path.node.type === 'AssignmentExpression') {
-      return canBeBigInt(path.get('right'));
+      if (path.node.operator === '=') {
+        return canBeBigInt(path.get('right'));
+      }
+      return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
     if (path.node.type === 'Identifier') {
       const binding = path.scope.getBinding(path.node.name);
