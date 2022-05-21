@@ -408,14 +408,23 @@ var maybeJSBI = {
               if (types.isMemberExpression(left)) {
                 const x = path.scope.generateUidIdentifier('x');
                 path.scope.push({id: x});
-                const y = path.scope.generateUidIdentifier('y');
-                path.scope.push({id: y});
-                // object[property] += right -> (x = object, y = property, x[y] = x[y] + right)
-                path.replaceWith(types.sequenceExpression([
-                  types.assignmentExpression('=', x, left.object),
-                  types.assignmentExpression('=', y, left.computed ? left.property : types.StringLiteral(left.property.name)),
-                  types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), right]))
-                ]));
+                if (left.computed && !types.isStringLiteral(left.property)) {
+                  const y = path.scope.generateUidIdentifier('y');
+                  path.scope.push({id: y});
+                  // object[property] += right -> (x = object, y = property, x[y] = x[y] + right)
+                  path.replaceWith(types.sequenceExpression([
+                    types.assignmentExpression('=', x, left.object),
+                    types.assignmentExpression('=', y, left.computed ? left.property : types.StringLiteral(left.property.name)),
+                    types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), right]))
+                  ]));
+                } else {
+                  const y = left.computed ? left.property : types.StringLiteral(left.property.name);
+                  // object[property] += right -> (x = object, x[property] = x[property] + right)
+                  path.replaceWith(types.sequenceExpression([
+                    types.assignmentExpression('=', x, left.object),
+                    types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), right]))
+                  ]));
+                }
               } else {
                 // left += right -> (left = left + right)
                 path.replaceWith(types.assignmentExpression('=', left, types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [left, right])));
