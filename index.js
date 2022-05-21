@@ -50,7 +50,7 @@ module.exports = function (babel) {
     return null;
   };
 
-  const visited = new Map();
+  let visited = new Map();
   const canBeBigInt = function (path) {
     if (visited.get(path) != null) {
       return visited.get(path);
@@ -97,7 +97,7 @@ module.exports = function (babel) {
       return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
     if (path.node.type === 'AssignmentExpression') {
-      return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
+      return canBeBigInt(path.get('right'));
     }
     if (path.node.type === 'Identifier') {
       const binding = path.scope.getBinding(path.node.name);
@@ -116,6 +116,23 @@ module.exports = function (babel) {
               }
               if (allAssignmentsHaveSameType) {
                 return X;
+              }
+              if (visited.get(path) === maybeJSBI) { // assume that variable type is the same
+                const visitedOriginal = new Map(visited.entries());
+                visited.set(path, X);
+                for (const e of visited.entries()) {
+                  if (e[1] === maybeJSBI) {
+                    visited.delete(e[0]);
+                  }
+                }
+                let allAssignmentsHaveSameType = true;
+                for (const path of binding.constantViolations) {
+                  allAssignmentsHaveSameType = allAssignmentsHaveSameType && canBeBigInt(path) === X;
+                }
+                if (allAssignmentsHaveSameType) {
+                  return X;
+                }
+                visited = visitedOriginal;
               }
             }
           }

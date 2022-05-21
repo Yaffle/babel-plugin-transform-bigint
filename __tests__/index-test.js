@@ -160,3 +160,15 @@ it('it does not mutable variables', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+it('it does not mutable variables2', function () {
+  const example = `
+    function f() {
+      let i = 1;
+      i = -i;
+      return i * i;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});

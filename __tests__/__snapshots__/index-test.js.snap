@@ -23,6 +23,16 @@ function f() {
 }"
 `;
 
+exports[`it does not mutable variables2 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+function f() {
+  let i = 1;
+  i = -i;
+  return i * i;
+}"
+`;
+
 exports[`it works with AssignmentExpressions 1`] = `
 "var _x, _x2, _x3, _y, _x4, _y2;
 
