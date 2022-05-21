@@ -149,6 +149,45 @@ module.exports = function (babel) {
           }
         }
       }
+      if (binding != null && binding.constant) {
+        //console.debug(binding);
+        const functionDeclaration = path.findParent(path => path.isFunctionDeclaration());
+        if (functionDeclaration != null) {
+          const body = functionDeclaration.get('body');
+          const x = body.get('body')[0];
+          if (types.isIfStatement(x)) {
+            const ifStatement = x;
+            const tmp = ifStatement.get('test');
+            const variableName = path.node.name;
+            const isNotTypeOfCheck = function (node, type, variableName) {
+              if (node.type === 'BinaryExpression' && node.operator === '!==') {
+                if (node.left.type === 'UnaryExpression' && node.left.operator === 'typeof') {
+                  if (node.left.argument.type === 'Identifier' && node.left.argument.name === variableName) {
+                    if (node.right.type === 'StringLiteral' && node.right.value === type) {
+                      return true;
+                    }
+                  }
+                }
+              }
+              if (node.type === 'LogicalExpression' && node.operator === '||') {
+                if (isNotTypeOfCheck(node.left, type, variableName)) {
+                  return true;
+                }
+                if (isNotTypeOfCheck(node.right, type, variableName)) {
+                  return true;
+                }
+              }
+              return false;
+            };
+            if (isNotTypeOfCheck(tmp.node, 'bigint', variableName)) {
+              return JSBI;
+            }
+            if (isNotTypeOfCheck(tmp.node, 'number', variableName)) {
+              return false;
+            }
+          }
+        }
+      }
       return maybeJSBI;
     }
     if (path.node.type === 'ConditionalExpression') {
@@ -284,6 +323,8 @@ var maybeJSBI = {
 };
   `;
   //const maybeJSBICode = '';
+  
+  const typeOfIgnore = new Set();
 
   return {
     inherits: syntaxBigInt,
@@ -318,12 +359,32 @@ var maybeJSBI = {
       },
       BinaryExpression: function (path, state) {
         const JSBI = canBeBigInt(path);
+        const operator = path.node.operator;
         if (JSBI !== false) {
-          const operator = path.node.operator;
           const functionName = getFunctionName(operator) || getRelationalFunctionName(operator);
           if (functionName != null) {
             // x * y -> JSBI.multiply(x, y)
             path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [path.node.left, path.node.right]));
+          }
+        }
+        // typeof x
+        if ((operator === '===' || operator === '!==') &&
+              types.isUnaryExpression(path.node.left) && path.node.left.operator === 'typeof' && types.isIdentifier(path.node.left.argument) &&
+              types.isStringLiteral(path.node.right)) {
+          // typeof x === 'bigint' -> (x instanceof JSBI || typeof x === 'bigint')
+          const typeOfTest = path.node.left;
+          typeOfIgnore.add(typeOfTest);
+          if (path.node.right.value === 'bigint' && !typeOfIgnore.has(path.node)) {
+            const typeOfTest = types.unaryExpression('typeof', path.node.left.argument);
+            const node = types.binaryExpression(operator, typeOfTest, types.stringLiteral('bigint'));
+            const instanceOfNode = types.binaryExpression('instanceof', typeOfTest.argument, types.identifier('JSBI'));
+            path.replaceWith(types.logicalExpression(
+              '||',
+              operator === '!==' ? types.unaryExpression('!', instanceOfNode) : instanceOfNode,
+              node
+            ));
+            typeOfIgnore.add(node);
+            typeOfIgnore.add(typeOfTest);
           }
         }
       },
@@ -335,6 +396,10 @@ var maybeJSBI = {
             // -x -> JSBI.unaryMinus(x)
             path.replaceWith(types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [path.node.argument]));
           }
+        }
+        // typeof x
+        if (path.node.operator === 'typeof' && !typeOfIgnore.has(path.node)) {
+          throw new RangeError('not supported');
         }
       },  
       UpdateExpression: function (path, state) {
@@ -443,6 +508,7 @@ var maybeJSBI = {
     },
     pre: function () {
       visited.clear();
+      typeOfIgnore.clear();
     },
     post: function (state) {
       //console.log(state);

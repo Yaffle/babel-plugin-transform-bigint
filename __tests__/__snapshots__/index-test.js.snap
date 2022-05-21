@@ -59,6 +59,42 @@ if (g >= 1) {
 }"
 `;
 
+exports[`typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/narrowing.html#typeof-type-guards) 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+function f1(a) {
+  if (!(a instanceof JSBI) || typeof a !== \\"bigint\\") {
+    throw new RangeError();
+  }
+
+  return JSBI.multiply(a, a);
+}
+
+function f2(a, b) {
+  if (!(a instanceof JSBI) || typeof a !== \\"bigint\\" || !(b instanceof JSBI) || typeof b !== \\"bigint\\") {
+    throw new RangeError();
+  }
+
+  return JSBI.multiply(a, b);
+}
+
+function f3(a) {
+  if (typeof a !== 'number') {
+    throw new RangeError();
+  }
+
+  return a * a;
+}
+
+function f4(a, b) {
+  if (typeof a !== 'number' || typeof b !== 'number') {
+    throw new RangeError();
+  }
+
+  return a * b;
+}"
+`;
+
 exports[`works 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 

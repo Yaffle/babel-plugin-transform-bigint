@@ -117,3 +117,34 @@ it('BigInt.asUintN(64, a), BigInt.asIntN(64, a)', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+it('typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/narrowing.html#typeof-type-guards)', function () {
+  const example = `
+    function f1(a) {
+      if (typeof a !== 'bigint') {
+        throw new RangeError();
+      }
+      return a * a;
+    }
+    function f2(a, b) {
+      if (typeof a !== 'bigint' || typeof b !== 'bigint') {
+        throw new RangeError();
+      }
+      return a * b;
+    }
+    function f3(a) {
+      if (typeof a !== 'number') {
+        throw new RangeError();
+      }
+      return a * a;
+    }
+    function f4(a, b) {
+      if (typeof a !== 'number' || typeof b !== 'number') {
+        throw new RangeError();
+      }
+      return a * b;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
