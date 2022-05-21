@@ -5,7 +5,7 @@
 const babel = require('@babel/core');
 const plugin = require('../index.js');
 
-it('it works with UpdateExpression', function () {
+it('it works with AssignmentExpressions', function () {
   const example = `
     const o = {};
     o.x = {};
@@ -19,6 +19,21 @@ it('it works with UpdateExpression', function () {
     o.x['y'] += b;
     o.x[y] += b;
     o.x[y + z] += b;
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+/*
+it('it works with UpdateExpression', function () {
+  const example = `
+    const o = {};
+    o.x = {};
+    o.x.y = 1n;
+    o.x.yz = 1n;
+    const y = 'y';
+    const z = 'z';
+    const b = 1n;
 
     ++o.x.y;
     ++o.x['y'];
@@ -33,7 +48,7 @@ it('it works with UpdateExpression', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
-
+*/
 
 it('works when type of variable is changed', function () {
   const example = `

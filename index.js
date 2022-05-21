@@ -57,6 +57,7 @@ module.exports = function (babel) {
     }
     visited.set(path, maybeJSBI);
     const result = canBeBigIntInternal(path);
+    //console.debug('canBeBigInt: ' + path.toString() + ', result: ' + result);
     if (result === maybeJSBI) {
       visited.delete(path);
     } else {
@@ -103,8 +104,11 @@ module.exports = function (babel) {
       if (binding != null) {
         if (binding.path.node.type === 'VariableDeclarator') {
           const x = binding.path.get('init');
-          if (x.node != null && canBeBigInt(x) === false) {
+          if (x.node != null && canBeBigInt(x) === false && binding.constant) {
             return false;
+          }
+          if (x.node != null && canBeBigInt(x) === JSBI && binding.constant) {
+            return JSBI;
           }
         }
         for (const path of binding.referencePaths) {
@@ -179,11 +183,11 @@ module.exports = function (babel) {
           path.node.callee.name === 'BigInt') {
         return JSBI;
       }
-      //if (path.node.callee.type === 'MemberExpression' &&
-      //    path.node.callee.object.type === 'Identifier' &&
-      //    path.node.callee.object.name === 'JSBI') {
-      //  return JSBI;
-      //}
+      if (path.node.callee.type === 'MemberExpression' &&
+          path.node.callee.object.type === 'Identifier' &&
+          path.node.callee.object.name === 'JSBI') {
+        return JSBI;
+      }
     }
     if (path.node.type === 'CallExpression') {
       if (path.node.callee.type === 'Identifier') {
@@ -215,6 +219,7 @@ module.exports = function (babel) {
   const IMPORT_PATH = './jsbi.mjs';
 
   const maybeJSBICode = `
+
 var maybeJSBI = {
   toNumber: function toNumber(a) {
     return typeof a === "object" ? JSBI.toNumber(a) : Number(a);
@@ -333,6 +338,9 @@ var maybeJSBI = {
         }
       },  
       UpdateExpression: function (path, state) {
+        throw new RangeError('UpdateExpressions are not supported because of the complexity: ' + path);
+        // The implementation below is buggy, as it converts ++x to x += 1n even for number x
+        /*
         const JSBI = canBeBigInt(path);
         if (JSBI !== false) {
           const operator = path.node.operator;
@@ -385,7 +393,8 @@ var maybeJSBI = {
               }
             }
           }
-        }
+        }*/
+        
       },
       AssignmentExpression: function (path, state) {
         const JSBI = canBeBigInt(path);
@@ -423,9 +432,15 @@ var maybeJSBI = {
         path.unshiftContainer('body', importDeclaration);
       }
     },
+    pre: function () {
+      visited.clear();
+    },
     post: function (state) {
       //console.log(state);
-      state.ast.program.body.unshift(babel.parse(maybeJSBICode).program.body[0]);
+      const usesMaybeJSBI = state.path.toString().indexOf('maybeJSBI') !== -1;
+      if (usesMaybeJSBI) {
+        state.ast.program.body.unshift(babel.parse(maybeJSBICode).program.body[0]);
+      }
     }
   };
 };
