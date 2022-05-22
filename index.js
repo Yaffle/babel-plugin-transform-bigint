@@ -286,6 +286,9 @@ module.exports = function (babel) {
         }
       }
     }
+    if (path.node.type === 'CallExpression') {
+      return maybeJSBI;
+    }
     if (path.node.type === 'UpdateExpression') {
       return canBeBigInt(path.get('argument'));
     }
@@ -293,6 +296,9 @@ module.exports = function (babel) {
       return maybeJSBI;
     }
     if (path.node.type === 'ObjectExpression') {
+      return false;
+    }
+    if (path.node.type === 'ArrayExpression') {
       return false;
     }
     console.debug('unknown path.node.type: ' + path.node.type);
@@ -510,6 +516,9 @@ var maybeJSBI = {
         
       },
       AssignmentExpression: function (path, state) {
+        if (types.isMemberExpression(path.node.left) && types.isIdentifier(path.node.left.object) && path.node.left.object.name === 'arguments') {
+          throw new RangeError('arguments should not be used');
+        }
         const JSBI = canBeBigInt(path);
         if (JSBI !== false) {
           const operator = path.node.operator;
@@ -554,9 +563,6 @@ var maybeJSBI = {
         path.unshiftContainer('body', importDeclaration);
       },
       Identifier: function (path) {
-        if (path.node.name === 'arguments') {
-          throw new RangeError('arguments should not be used');
-        }
         if (path.node.name === 'eval') {
           throw new RangeError('eval should not be used');
         }
