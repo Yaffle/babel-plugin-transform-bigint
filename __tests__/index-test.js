@@ -172,3 +172,56 @@ it('it does not replace expression for a mutable variable2', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+
+it('default values', function () {
+  const example = `
+    function f(y = unknown(), z = y * y) {
+      if (typeof y !== 'bigint') {
+        throw new RangeError();
+      }
+      return y * y;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+
+it('arguments in non-strict mode', function () {
+  const example = `
+    function func(a) {
+      if (typeof a !== 'number') {
+        throw new RangeError();
+      }
+      arguments[0] = 99n;
+      console.log(a * a);
+    }
+    func(10); // prints 9801
+  `;
+  try {
+    const {code} = babel.transform(example, {plugins: [plugin]});
+    expect(code).toMatchSnapshot();
+  } catch (error) {
+    console.assert(error instanceof RangeError);
+  }
+});
+
+it('eval in non-strict mode', function () {
+  const example = `
+    function func(a) {
+      if (typeof a !== 'number') {
+        throw new RangeError();
+      }
+      eval('a = 99n')
+      console.log(a * a);
+    }
+    func(10); // prints 9801
+  `;
+  try {
+    const {code} = babel.transform(example, {plugins: [plugin]});
+    expect(code).toMatchSnapshot();
+  } catch (error) {
+    console.assert(error instanceof RangeError);
+  }
+});

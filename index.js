@@ -87,6 +87,19 @@ module.exports = function (babel) {
     if (path.node.type === 'StringLiteral') {
       return false;
     }
+    if (path.node.type === 'NullLiteral') {
+      return false;
+    }
+    if (path.node.type === 'RegExpLiteral') {
+      return false;
+    }
+    if (path.node.type === 'BooleanLiteral') {
+      return false;
+    }
+    if (path.node.type === 'TemplateLiteral') {
+      return false;
+    }
+
     if (path.node.type === 'UnaryExpression') {
       if (path.node.operator === '+') { // +0n is not allowed
         return false;
@@ -102,6 +115,7 @@ module.exports = function (babel) {
       }
       return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
+
     if (path.node.type === 'Identifier') {
       const binding = path.scope.getBinding(path.node.name);
       if (binding != null) {
@@ -181,7 +195,7 @@ module.exports = function (babel) {
       if (binding != null && binding.constant) {
         //console.debug(binding);
         const functionDeclaration = path.findParent(path => path.isFunctionDeclaration());
-        if (functionDeclaration != null) {
+        if (functionDeclaration != null && functionDeclaration.node.params.filter(param => !types.isIdentifier(param)).length == 0) {
           const body = functionDeclaration.get('body');
           const x = body.get('body')[0];
           if (types.isIfStatement(x)) {
@@ -219,6 +233,7 @@ module.exports = function (babel) {
       }
       return maybeJSBI;
     }
+
     if (path.node.type === 'ConditionalExpression') {
       return canBeBigInt(path.get('consequent')) !== false || canBeBigInt(path.get('alternate')) !== false ? maybeJSBI : false;
     }
@@ -226,9 +241,6 @@ module.exports = function (babel) {
       return false;
     }
     if (path.node.type === 'NewExpression') {
-      return false;
-    }
-    if (path.node.type === 'NullLiteral') {
       return false;
     }
     if (path.node.type === 'LogicalExpression') {
@@ -277,6 +289,13 @@ module.exports = function (babel) {
     if (path.node.type === 'UpdateExpression') {
       return canBeBigInt(path.get('argument'));
     }
+    if (path.node.type === 'MemberExpression') {
+      return maybeJSBI;
+    }
+    if (path.node.type === 'ObjectExpression') {
+      return false;
+    }
+    console.debug('unknown path.node.type: ' + path.node.type);
     //TODO:
     return maybeJSBI;
   };
@@ -533,6 +552,14 @@ var maybeJSBI = {
         const importDefaultSpecifier = types.importDefaultSpecifier(identifier);
         const importDeclaration = types.importDeclaration([importDefaultSpecifier], types.stringLiteral(IMPORT_PATH));
         path.unshiftContainer('body', importDeclaration);
+      },
+      Identifier: function (path) {
+        if (path.node.name === 'arguments') {
+          throw new RangeError('arguments should not be used');
+        }
+        if (path.node.name === 'eval') {
+          throw new RangeError('eval should not be used');
+        }
       }
     },
     pre: function () {
