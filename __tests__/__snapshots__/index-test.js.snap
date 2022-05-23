@@ -153,6 +153,15 @@ if (g >= 1) {
 }"
 `;
 
+exports[`sometimes type of conditional expression can be determined as JSBI 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+function f(a) {
+  const b = JSBI.equal(JSBI.remainder(a, JSBI.BigInt(3)), JSBI.BigInt(0)) ? JSBI.BigInt(1) : JSBI.BigInt(3);
+  return JSBI.multiply(b, b);
+}"
+`;
+
 exports[`typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/narrowing.html#typeof-type-guards) 1`] = `
 "var maybeJSBI = {
   toNumber: function toNumber(a) {

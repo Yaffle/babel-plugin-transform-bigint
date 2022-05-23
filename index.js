@@ -244,7 +244,9 @@ module.exports = function (babel) {
     }
 
     if (path.node.type === 'ConditionalExpression') {
-      return canBeBigInt(path.get('consequent')) !== false || canBeBigInt(path.get('alternate')) !== false ? maybeJSBI : false;
+      const a = canBeBigInt(path.get('consequent'));
+      const b = canBeBigInt(path.get('alternate'));
+      return a === b ? a : maybeJSBI;
     }
     if (path.node.type === 'FunctionExpression') {
       return false;

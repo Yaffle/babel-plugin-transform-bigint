@@ -231,3 +231,15 @@ it('eval in non-strict mode', function () {
     console.assert(error instanceof RangeError);
   }
 });
+
+
+it('sometimes type of conditional expression can be determined as JSBI', function () {
+  const example = `
+    function f(a) {
+      const b = a % 3n === 0n ? 1n : 3n;
+      return b * b;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
