@@ -202,6 +202,15 @@ module.exports = function (babel) {
             const ifStatement = x;
             const tmp = ifStatement.get('test');
             const variableName = path.node.name;
+            const consequent = ifStatement.get('consequent').node;
+            let ok = false;
+            if (types.isBlockStatement(consequent)) {
+              if (consequent.body.length === 1) {
+                if (types.isThrowStatement(consequent.body[0])) {
+                  ok = true;
+                }
+              }
+            }
             const isNotTypeOfCheck = function (node, type, variableName) {
               if (node.type === 'BinaryExpression' && node.operator === '!==') {
                 if (node.left.type === 'UnaryExpression' && node.left.operator === 'typeof') {
@@ -222,10 +231,10 @@ module.exports = function (babel) {
               }
               return false;
             };
-            if (isNotTypeOfCheck(tmp.node, 'bigint', variableName)) {
+            if (ok && isNotTypeOfCheck(tmp.node, 'bigint', variableName)) {
               return JSBI;
             }
-            if (isNotTypeOfCheck(tmp.node, 'number', variableName)) {
+            if (ok && isNotTypeOfCheck(tmp.node, 'number', variableName)) {
               return false;
             }
           }

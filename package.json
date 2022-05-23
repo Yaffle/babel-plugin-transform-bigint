@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-transform-bigint",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "A plugin for babel to transform `x * y` into something like `JSBI.multiply(x, y)` to support bigints.",
   "main": "index.js",
   "scripts": {

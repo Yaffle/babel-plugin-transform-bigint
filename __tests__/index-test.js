@@ -144,6 +144,12 @@ it('typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/narrow
       }
       return a * b;
     }
+    function f5(a) {
+      if (typeof a !== 'bigint') {
+        void 0;
+      }
+      return a * a;
+    }
   `;
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
