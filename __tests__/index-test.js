@@ -150,6 +150,7 @@ it('typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/narrow
       }
       return a * a;
     }
+    export {f1, f2, f3, f4, f5};
   `;
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
@@ -239,7 +240,31 @@ it('sometimes type of conditional expression can be determined as JSBI', functio
       const b = a % 3n === 0n ? 1n : 3n;
       return b * b;
     }
+    export default f;
   `;
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+it('internal number function', function () {
+  const example = `
+    function f(a) {
+      return a * a;
+    }
+    console.log(f(3));
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+it('internal bigint function', function () {
+  const example = `
+    function f(a) {
+      return a * a;
+    }
+    console.log(f(3n));
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+

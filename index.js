@@ -160,6 +160,44 @@ module.exports = function (babel) {
           //  return false;
           //}
         }
+        if (binding.path.node.type === 'Identifier' && binding.path.parentPath.node.type === 'FunctionDeclaration') {
+          //console.log(binding.path.parentPath.node, '!!!');
+          const functionPath = binding.path.parentPath;
+          const id = functionPath.get('id');
+          const functionBinding = functionPath.scope.getBinding(id.node.name);
+          if (functionBinding != null) {
+            let argIsBigInt = undefined;
+            //TODO: check no exports
+            for (const path of functionBinding.referencePaths) {
+              //console.log('function call: ' + path.parentPath + '', path.parentPath);
+              const functionCall = path.parentPath;
+              if (types.isCallExpression(functionCall)) {
+                //TODO: check arguments
+                const args = functionCall.get('arguments');
+                for (let i = 0; i < args.length; i += 1) {
+                  const a = args[i];
+                  //console.log('arg', a);
+                  const t = canBeBigInt(a);
+                  if (t === false && (argIsBigInt == undefined || argIsBigInt === 'false')) {
+                    argIsBigInt = 'false';
+                  } else if (t === JSBI && (argIsBigInt == undefined || argIsBigInt === 'true')) {
+                    argIsBigInt = 'true';
+                  } else {
+                    argIsBigInt = 'NO';
+                  }
+                }
+              } else {
+                argIsBigInt = 'NO';
+              }
+            }
+            if (argIsBigInt === 'false') {
+              return false;
+            }
+            if (argIsBigInt === 'true') {
+              return JSBI;
+            }
+          }
+        }
       } else {
         if (path.node.name === 'undefined') {
           return false;
