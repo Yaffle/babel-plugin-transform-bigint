@@ -493,7 +493,7 @@ var maybeJSBI = {
             const node = types.binaryExpression(operator, typeOfTest, types.stringLiteral('bigint'));
             const instanceOfNode = types.binaryExpression('instanceof', typeOfTest.argument, types.identifier('JSBI'));
             path.replaceWith(types.logicalExpression(
-              '||',
+              operator === '!==' ? '&&' : '||',
               operator === '!==' ? types.unaryExpression('!', instanceOfNode) : instanceOfNode,
               node
             ));

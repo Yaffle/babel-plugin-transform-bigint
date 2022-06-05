@@ -167,7 +167,7 @@ exports[`default values 1`] = `
 import JSBI from \\"./jsbi.mjs\\";
 
 function f(y = unknown(), z = maybeJSBI.multiply(y, y)) {
-  if (!(y instanceof JSBI) || typeof y !== \\"bigint\\") {
+  if (!(y instanceof JSBI) && typeof y !== \\"bigint\\") {
     throw new RangeError();
   }
 
@@ -338,19 +338,19 @@ exports[`typeof type guard (see https://www.typescriptlang.org/docs/handbook/2/n
 import JSBI from \\"./jsbi.mjs\\";
 
 function f1(a) {
-  if (!(a instanceof JSBI) || typeof a !== \\"bigint\\") {
+  if (!(a instanceof JSBI) && typeof a !== \\"bigint\\") {
     throw new RangeError();
   }
 
-  return JSBI.multiply(a, a);
+  return maybeJSBI.multiply(a, a);
 }
 
 function f2(a, b) {
-  if (!(a instanceof JSBI) || typeof a !== \\"bigint\\" || !(b instanceof JSBI) || typeof b !== \\"bigint\\") {
+  if (!(a instanceof JSBI) && typeof a !== \\"bigint\\" || !(b instanceof JSBI) && typeof b !== \\"bigint\\") {
     throw new RangeError();
   }
 
-  return JSBI.multiply(a, b);
+  return maybeJSBI.multiply(a, b);
 }
 
 function f3(a) {
@@ -370,7 +370,7 @@ function f4(a, b) {
 }
 
 function f5(a) {
-  if (!(a instanceof JSBI) || typeof a !== \\"bigint\\") {
+  if (!(a instanceof JSBI) && typeof a !== \\"bigint\\") {
     void 0;
   }
 
