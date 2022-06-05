@@ -268,3 +268,24 @@ it('internal bigint function', function () {
   expect(code).toMatchSnapshot();
 });
 
+it('CallExpression\'s type', function () {
+  const example = `
+    function n() {
+      return 3;
+    }
+    console.log(n() * n());
+    function b() {
+      return 3n;
+    }
+    console.log(b() * b());
+    function nb() {
+      if (Math.random() < 0.5) {
+        return 3;
+      }
+      return 3n;
+    }
+    console.log(nb() * nb());
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});

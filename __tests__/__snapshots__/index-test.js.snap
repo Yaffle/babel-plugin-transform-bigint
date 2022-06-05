@@ -13,6 +13,94 @@ const g = JSBI.BigInt(1);
 JSBI.asUintN(10, g);"
 `;
 
+exports[`CallExpression's type 1`] = `
+"var maybeJSBI = {
+  toNumber: function toNumber(a) {
+    return typeof a === \\"object\\" ? JSBI.toNumber(a) : Number(a);
+  },
+  add: function add(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.add(a, b) : a + b;
+  },
+  subtract: function subtract(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.subtract(a, b) : a - b;
+  },
+  multiply: function multiply(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.multiply(a, b) : a * b;
+  },
+  divide: function divide(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.divide(a, b) : a / b;
+  },
+  remainder: function remainder(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.remainder(a, b) : a % b;
+  },
+  exponentiate: function exponentiate(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.exponentiate(a, b) : typeof a === \\"bigint\\" && typeof b === \\"bigint\\" ? new Function(\\"a\\", \\"b\\", \\"return a**b\\")(a, b) : Math.pow(a, b);
+  },
+  leftShift: function leftShift(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.leftShift(a, b) : a << b;
+  },
+  signedRightShift: function signedRightShift(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.signedRightShift(a, b) : a >> b;
+  },
+  bitwiseAnd: function bitwiseAnd(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.bitwiseAnd(a, b) : a & b;
+  },
+  bitwiseOr: function bitwiseOr(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.bitwiseOr(a, b) : a | b;
+  },
+  bitwiseXor: function bitwiseXor(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.bitwiseXor(a, b) : a ^ b;
+  },
+  lessThan: function lessThan(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.lessThan(a, b) : a < b;
+  },
+  greaterThan: function greaterThan(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.greaterThan(a, b) : a > b;
+  },
+  lessThanOrEqual: function lessThanOrEqual(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.lessThanOrEqual(a, b) : a <= b;
+  },
+  greaterThanOrEqual: function greaterThanOrEqual(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.greaterThanOrEqual(a, b) : a >= b;
+  },
+  equal: function equal(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.equal(a, b) : a === b;
+  },
+  notEqual: function notEqual(a, b) {
+    return typeof a === \\"object\\" && typeof b === \\"object\\" ? JSBI.notEqual(a, b) : a !== b;
+  },
+  unaryMinus: function unaryMinus(a) {
+    return typeof a === \\"object\\" ? JSBI.unaryMinus(a) : -a;
+  },
+  bitwiseNot: function bitwiseNot(a) {
+    return typeof a === \\"object\\" ? JSBI.bitwiseNot(a) : ~a;
+  }
+};
+import JSBI from \\"./jsbi.mjs\\";
+
+function n() {
+  return 3;
+}
+
+console.log(n() * n());
+
+function b() {
+  return JSBI.BigInt(3);
+}
+
+console.log(JSBI.multiply(b(), b()));
+
+function nb() {
+  if (Math.random() < 0.5) {
+    return 3;
+  }
+
+  return JSBI.BigInt(3);
+}
+
+console.log(maybeJSBI.multiply(nb(), nb()));"
+`;
+
 exports[`default values 1`] = `
 "var maybeJSBI = {
   toNumber: function toNumber(a) {

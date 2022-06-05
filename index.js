@@ -323,13 +323,24 @@ module.exports = function (babel) {
         const binding = path.scope.getBinding(path.node.callee.name);
         if (binding != null) {
           if (binding.path.node.type === 'FunctionDeclaration') {
-            const statements = binding.path.get('body').get('body');
+            //console.log('binding.path', binding.path);
+            //const statements = binding.path.get('body').get('body');
+            const statements = [];
+            binding.path.getScope().traverse(binding.path.node, {ReturnStatement: function(path){ statements.push(path); }}, this);
+            let returnType = undefined;
             for (const statement of statements) {
               if (statement.type === 'ReturnStatement') {
-                if (canBeBigInt(statement.get('argument')) === false) {
-                  return false;
+                const t = canBeBigInt(statement.get('argument'));
+                if (returnType === undefined) {
+                  returnType = t;
+                }
+                if (returnType !== t) {
+                  returnType = maybeJSBI;
                 }
               }
+            }
+            if (returnType === false || returnType == JSBI) {
+              return returnType;
             }
           }
         }
