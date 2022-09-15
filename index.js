@@ -576,6 +576,23 @@ var maybeJSBI = {
         
       },
       AssignmentExpression: function (path, state) {
+        const isConstant = function (path) {
+          if (types.isStringLiteral(path.node)) {
+            return true;
+          }
+          if (types.isNumericLiteral(path.node)) {
+            return true;
+          }
+          if (types.isIdentifier(path.node)) {
+            const binding = path.scope.getBinding(path.node.name);
+            if (binding == null) {
+              console.warn('unknown identifier: ' + path.node.name);
+              return false;
+            }
+            return binding.constant;
+          }
+          return false;
+        };
         if (types.isMemberExpression(path.node.left) && types.isIdentifier(path.node.left.object) && path.node.left.object.name === 'arguments') {
           throw new RangeError('arguments should not be used');
         }
@@ -588,24 +605,32 @@ var maybeJSBI = {
               const left = path.node.left;
               const right = path.node.right;
               if (types.isMemberExpression(left)) {
-                const x = path.scope.generateUidIdentifier('x');
-                path.scope.push({id: x});
-                if (left.computed && !types.isStringLiteral(left.property)) {
-                  const y = path.scope.generateUidIdentifier('y');
+                // object[property] += right -> (x = object, y = property, x[y] = x[y] + right)
+                const expressions = [];
+                let x = left.object;
+                if (!isConstant(path.get('left').get('object'))) {
+                  x = path.scope.generateUidIdentifier('x');
+                  path.scope.push({id: x});
+                  expressions.push(types.assignmentExpression('=', x, left.object));
+                }
+                let y = left.property;
+                if (!isConstant(path.get('left').get('property'))) {
+                  y = path.scope.generateUidIdentifier('y');
                   path.scope.push({id: y});
-                  // object[property] += right -> (x = object, y = property, x[y] = x[y] + right)
-                  path.replaceWith(types.sequenceExpression([
-                    types.assignmentExpression('=', x, left.object),
-                    types.assignmentExpression('=', y, left.computed ? left.property : types.StringLiteral(left.property.name)),
-                    types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), right]))
-                  ]));
+                  expressions.push(types.assignmentExpression('=', y, left.property));
+                }
+                const assignment = types.assignmentExpression('=',
+                  types.memberExpression(x, y, left.computed),
+                  types.callExpression(
+                    types.memberExpression(types.identifier(JSBI), types.identifier(functionName)),
+                    [types.memberExpression(x, y, left.computed), right]
+                  )
+                );
+                expressions.push(assignment);
+                if (expressions.length === 1) {
+                  path.replaceWith(expressions[0]);
                 } else {
-                  const y = left.computed ? left.property : types.StringLiteral(left.property.name);
-                  // object[property] += right -> (x = object, x[property] = x[property] + right)
-                  path.replaceWith(types.sequenceExpression([
-                    types.assignmentExpression('=', x, left.object),
-                    types.assignmentExpression('=', types.memberExpression(x, y, true), types.callExpression(types.memberExpression(types.identifier(JSBI), types.identifier(functionName)), [types.memberExpression(x, y, true), right]))
-                  ]));
+                  path.replaceWith(types.sequenceExpression(expressions));
                 }
               } else {
                 // left += right -> (left = left + right)

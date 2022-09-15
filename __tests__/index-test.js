@@ -14,11 +14,15 @@ it('it works with AssignmentExpressions', function () {
     const y = 'y';
     const z = 'z';
     const b = 1n;
+    const array = [1n];
+    let i = 1;
 
     o.x.y += b;
     o.x['y'] += b;
     o.x[y] += b;
     o.x[y + z] += b;
+    array[i] += b;
+    array[0] += b;
   `;
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
