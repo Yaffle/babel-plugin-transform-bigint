@@ -215,6 +215,27 @@ function f() {
 }"
 `;
 
+exports[`it works with AssignmentExpressions 1`] = `
+"var _x, _x2, _x3, _x4, _y;
+
+import JSBI from \\"./jsbi.mjs\\";
+const o = {};
+o.x = {};
+o.x.y = JSBI.BigInt(1);
+o.x.yz = JSBI.BigInt(1);
+const y = 'y';
+const z = 'z';
+const b = JSBI.BigInt(1);
+const array = [JSBI.BigInt(1)];
+let i = 1;
+_x = o.x, _x.y = JSBI.add(_x.y, b);
+_x2 = o.x, _x2['y'] = JSBI.add(_x2['y'], b);
+_x3 = o.x, _x3[y] = JSBI.add(_x3[y], b);
+_x4 = o.x, _y = y + z, _x4[_y] = JSBI.add(_x4[_y], b);
+array[i] = JSBI.add(array[i], b);
+array[0] = JSBI.add(array[0], b);"
+`;
+
 exports[`non-strict comparisions are not changed 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 const g = JSBI.BigInt(1);

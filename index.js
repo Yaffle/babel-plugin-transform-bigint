@@ -575,17 +575,6 @@ var maybeJSBI = {
         
       },
       AssignmentExpression: function (path, state) {
-        const JSBI = canBeBigInt(path);
-        if (JSBI !== false) {
-          const operator = path.node.operator;
-          if (operator.endsWith('=')) {
-            const functionName = getFunctionName(operator.slice(0, -'='.length));
-            if (functionName != null) {
-              throw new RangeError('AssignmentExpressions are not supported because of the complexity: ' + path);
-            }
-          }
-        }
-        /*
         const isConstant = function (path) {
           if (types.isStringLiteral(path.node)) {
             return true;
@@ -649,7 +638,6 @@ var maybeJSBI = {
             }
           }
         }
-        */
       },
       Program: function (path) {
         // https://stackoverflow.com/a/35994497
