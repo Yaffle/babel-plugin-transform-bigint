@@ -5,6 +5,7 @@
 const babel = require('@babel/core');
 const plugin = require('../index.js');
 
+/*
 it('it works with AssignmentExpressions', function () {
   const example = `
     const o = {};
@@ -27,6 +28,7 @@ it('it works with AssignmentExpressions', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+*/
 
 /*
 it('it works with UpdateExpression', function () {

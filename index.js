@@ -203,28 +203,41 @@ module.exports = function (babel) {
           return false;
         }
       }
+      const checkTypeOf = function (node, variableName, type, not) {
+        // typeof x === "bigint"
+        if (node.type === 'BinaryExpression' && (!not ? node.operator === '===' : node.operator === '!==')) {
+          if (node.left.type === 'UnaryExpression' && node.left.operator === 'typeof') {
+            if (node.left.argument.type === 'Identifier' && node.left.argument.name === variableName) {
+              if (node.right.type === 'StringLiteral' && node.right.value === type) {
+                return true;
+              }
+            }
+          }
+        }
+        if (type === 'bigint') {
+          // x instanceof JSBI
+          if (!not || node.type === 'UnaryExpression' && node.operator === '!') {
+            if (node.argument.type === 'BinaryExpression' && node.argument.operator === 'instanceof') {
+              if (node.argument.left.type === 'Identifier' && node.argument.left.name === variableName) {
+                if (node.argument.right.type === 'Identifier' && node.argument.right.name === 'JSBI') {
+                  return true;
+                }
+              }
+            }
+          }
+        }
+        return false;
+      };
       if (binding != null && binding.constant) {
         const ifStatement = path.findParent(path => path.isIfStatement());
         const variableName = path.node.name;
         if (ifStatement != null) {
           const tmp = ifStatement.get('test');
           if (tmp.node.operator === '&&') {
-            const checkTypeOf = function (node) {
-              if (node.type === 'BinaryExpression' && node.operator === '===') {
-                if (node.left.type === 'UnaryExpression' && node.left.operator === 'typeof') {
-                  if (node.left.argument.type === 'Identifier' && node.left.argument.name === variableName) {
-                    if (node.right.type === 'StringLiteral' && node.right.value === 'number') {
-                      return true;
-                    }
-                  }
-                }
-              }
-              return false;
-            };
-            if (checkTypeOf(tmp.node.left)) {
+            if (checkTypeOf(tmp.node.left, variableName, 'number', false)) {
               return false;
             }
-            if (checkTypeOf(tmp.node.right)) {
+            if (checkTypeOf(tmp.node.right, variableName, 'number', false)) {
               return false;
             }
           }
@@ -250,14 +263,8 @@ module.exports = function (babel) {
               }
             }
             const isNotTypeOfCheck = function (node, type, variableName) {
-              if (node.type === 'BinaryExpression' && node.operator === '!==') {
-                if (node.left.type === 'UnaryExpression' && node.left.operator === 'typeof') {
-                  if (node.left.argument.type === 'Identifier' && node.left.argument.name === variableName) {
-                    if (node.right.type === 'StringLiteral' && node.right.value === type) {
-                      return true;
-                    }
-                  }
-                }
+              if (checkTypeOf(node, variableName, type, true)) {
+                return true;
               }
               if (node.type === 'LogicalExpression' && node.operator === '||') {
                 if (isNotTypeOfCheck(node.left, type, variableName)) {
@@ -485,20 +492,12 @@ var maybeJSBI = {
         if ((operator === '===' || operator === '!==') &&
               types.isUnaryExpression(path.node.left) && path.node.left.operator === 'typeof' && types.isIdentifier(path.node.left.argument) &&
               types.isStringLiteral(path.node.right)) {
-          // typeof x === 'bigint' -> (x instanceof JSBI || typeof x === 'bigint')
+          // typeof x === 'bigint' -> x instanceof JSBI
           const typeOfTest = path.node.left;
           typeOfIgnore.add(typeOfTest);
-          if (path.node.right.value === 'bigint' && !typeOfIgnore.has(path.node)) {
-            const typeOfTest = types.unaryExpression('typeof', path.node.left.argument);
-            const node = types.binaryExpression(operator, typeOfTest, types.stringLiteral('bigint'));
-            const instanceOfNode = types.binaryExpression('instanceof', typeOfTest.argument, types.identifier('JSBI'));
-            path.replaceWith(types.logicalExpression(
-              operator === '!==' ? '&&' : '||',
-              operator === '!==' ? types.unaryExpression('!', instanceOfNode) : instanceOfNode,
-              node
-            ));
-            typeOfIgnore.add(node);
-            typeOfIgnore.add(typeOfTest);
+          if (path.node.right.value === 'bigint') {
+            const instanceOfNode = types.binaryExpression('instanceof', path.node.left.argument, types.identifier('JSBI'));
+            path.replaceWith(operator === '!==' ? types.unaryExpression('!', instanceOfNode) : instanceOfNode);
           }
         }
       },
@@ -576,6 +575,8 @@ var maybeJSBI = {
         
       },
       AssignmentExpression: function (path, state) {
+        throw new RangeError('AssignmentExpressions are not supported because of the complexity: ' + path);
+        /*
         const isConstant = function (path) {
           if (types.isStringLiteral(path.node)) {
             return true;
@@ -639,6 +640,7 @@ var maybeJSBI = {
             }
           }
         }
+        */
       },
       Program: function (path) {
         // https://stackoverflow.com/a/35994497
