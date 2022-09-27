@@ -236,6 +236,37 @@ array[i] = JSBI.add(array[i], b);
 array[0] = JSBI.add(array[0], b);"
 `;
 
+exports[`maybeJSBI 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+function f(a) {
+  return JSBI.toNumber(JSBI.asUintN(64, a));
+}
+
+console.log(f(JSBI.BigInt(3)));"
+`;
+
+exports[`maybeJSBI2 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+function f(a) {
+  return Number(JSBI.lessThan(JSBI.BigInt(a), JSBI.BigInt(0)));
+}
+
+console.log(f(JSBI.BigInt(3)));"
+`;
+
+exports[`maybeJSBI2a 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+function f(a) {
+  const x = JSBI.lessThan(JSBI.BigInt(a), JSBI.BigInt(0));
+  return Number(x);
+}
+
+console.log(f(JSBI.BigInt(3)));"
+`;
+
 exports[`non-strict comparisions are not changed 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 const g = JSBI.BigInt(1);

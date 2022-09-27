@@ -107,6 +107,9 @@ module.exports = function (babel) {
       return canBeBigInt(path.get('argument'));
     }
     if (path.node.type === 'BinaryExpression') {
+      if (getRelationalFunctionName(path.node.operator) != null) {
+        return false;
+      }
       return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
     if (path.node.type === 'AssignmentExpression') {
@@ -321,7 +324,12 @@ module.exports = function (babel) {
       }
       if (path.node.callee.type === 'MemberExpression' &&
           path.node.callee.object.type === 'Identifier' &&
-          path.node.callee.object.name === 'JSBI') {
+          (path.node.callee.object.name === 'JSBI' || path.node.callee.object.name === 'BigInt')) {
+        if (path.node.callee.object.name === 'JSBI') {
+          if (['lessThan', 'greateThan', 'equal', 'notEqual', 'lessThanOrEqual', 'greaterThanOrEqual', 'toNumber'].indexOf(path.node.callee.property.name) !== -1) {
+            return false;
+          }
+        }
         return JSBI;
       }
     }
@@ -479,7 +487,7 @@ var maybeJSBI = {
         }
       },
       BinaryExpression: function (path, state) {
-        const JSBI = canBeBigInt(path);
+        const JSBI = and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
         const operator = path.node.operator;
         if (JSBI !== false) {
           const functionName = getFunctionName(operator) || getRelationalFunctionName(operator);

@@ -294,3 +294,35 @@ it('CallExpression\'s type', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+it('maybeJSBI', function () {
+  const example = `
+    function f(a) {
+      return Number(BigInt.asUintN(64, a));
+    }
+    console.log(f(3n));
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+it('maybeJSBI2', function () {
+  const example = `
+    function f(a) {
+      return Number(BigInt(a) < BigInt(0));
+    }
+    console.log(f(3n));
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+it('maybeJSBI2a', function () {
+  const example = `
+    function f(a) {
+      const x = BigInt(a) < BigInt(0);
+      return Number(x);
+    }
+    console.log(f(3n));
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
