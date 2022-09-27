@@ -326,3 +326,12 @@ it('maybeJSBI2a', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+it('maybeJSBI3', function () {
+  const example = `
+    function f(a) {
+      return Math.floor(a + a);
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});

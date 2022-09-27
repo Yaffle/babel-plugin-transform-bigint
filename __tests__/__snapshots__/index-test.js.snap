@@ -267,6 +267,14 @@ function f(a) {
 console.log(f(JSBI.BigInt(3)));"
 `;
 
+exports[`maybeJSBI3 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+function f(a) {
+  return Math.floor(a + a);
+}"
+`;
+
 exports[`non-strict comparisions are not changed 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 const g = JSBI.BigInt(1);

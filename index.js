@@ -99,7 +99,17 @@ module.exports = function (babel) {
     if (path.node.type === 'TemplateLiteral') {
       return false;
     }
-
+    // Math.floor(a / b)
+    if (path.parentPath.node.type === 'CallExpression' &&
+        path.parentPath.node.arguments.length === 1 &&
+        path.parentPath.node.arguments[0] === path.node) {
+      const callee = path.parentPath.node.callee;
+      if (callee.type === 'MemberExpression' &&
+          callee.object.type === 'Identifier' &&
+          callee.object.name === 'Math') {
+        return false;
+      }
+    }
     if (path.node.type === 'UnaryExpression') {
       if (path.node.operator === '+') { // +0n is not allowed
         return false;
@@ -487,8 +497,8 @@ var maybeJSBI = {
         }
       },
       BinaryExpression: function (path, state) {
-        const JSBI = and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
         const operator = path.node.operator;
+        const JSBI = getRelationalFunctionName(operator) != null ? and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right'))) : canBeBigInt(path);
         if (JSBI !== false) {
           const functionName = getFunctionName(operator) || getRelationalFunctionName(operator);
           if (functionName != null) {
