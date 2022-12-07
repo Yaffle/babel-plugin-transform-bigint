@@ -335,3 +335,20 @@ it('maybeJSBI3', function () {
   const {code} = babel.transform(example, {plugins: [plugin]});
   expect(code).toMatchSnapshot();
 });
+
+
+it('maybeJSBI avoided for a FunctionExpression', function () {
+  const example = `
+    const f = function (x) {
+      if (typeof x !== 'number') {
+        throw new RangeError();
+      }
+      return x * x;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+
+  

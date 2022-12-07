@@ -258,9 +258,9 @@ module.exports = function (babel) {
       }
       if (binding != null && binding.constant) {
         //console.debug(binding);
-        const functionDeclaration = path.findParent(path => path.isFunctionDeclaration());
-        if (functionDeclaration != null && functionDeclaration.node.params.filter(param => !types.isIdentifier(param)).length == 0) {
-          const body = functionDeclaration.get('body');
+        const functionDeclarationOrExpression = path.findParent(path => path.isFunctionDeclaration() || path.isFunctionExpression());
+        if (functionDeclarationOrExpression != null && functionDeclarationOrExpression.node.params.filter(param => !types.isIdentifier(param)).length == 0) {
+          const body = functionDeclarationOrExpression.get('body');
           const x = body.get('body')[0];
           if (types.isIfStatement(x)) {
             const ifStatement = x;
@@ -347,7 +347,7 @@ module.exports = function (babel) {
       if (path.node.callee.type === 'Identifier') {
         const binding = path.scope.getBinding(path.node.callee.name);
         if (binding != null) {
-          if (binding.path.node.type === 'FunctionDeclaration') {
+          if (binding.path.node.type === 'FunctionDeclaration' || binding.path.node.type === 'FunctionExpression') {
             //console.log('binding.path', binding.path);
             //const statements = binding.path.get('body').get('body');
             const statements = [];

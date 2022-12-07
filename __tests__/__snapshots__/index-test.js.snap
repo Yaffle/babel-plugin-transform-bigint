@@ -246,6 +246,18 @@ function f(a) {
 console.log(f(JSBI.BigInt(3)));"
 `;
 
+exports[`maybeJSBI avoided for a FunctionExpression 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+const f = function (x) {
+  if (typeof x !== 'number') {
+    throw new RangeError();
+  }
+
+  return x * x;
+};"
+`;
+
 exports[`maybeJSBI2 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 
