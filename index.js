@@ -325,13 +325,17 @@ module.exports = function (babel) {
         return false;
       }
       if (path.node.callee.type === 'Identifier') {
-        if (path.node.callee.name === 'Number') {
+        const name = path.node.callee.name;
+        if (name === 'Number') {
           return false;
         }
-        if (path.node.callee.name === 'String') {
+        if (name === 'String') {
           return false;
         }
-        if (path.node.callee.name === 'BigInt') {
+        if (name === 'Boolean') {
+          return false;
+        }
+        if (name === 'BigInt') {
           return JSBI;
         }
       }
