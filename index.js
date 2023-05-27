@@ -324,13 +324,16 @@ module.exports = function (babel) {
           path.node.callee.object.name === 'Math') {
         return false;
       }
-      if (path.node.callee.type === 'Identifier' &&
-          path.node.callee.name === 'Number') {
-        return false;
-      }
-      if (path.node.callee.type === 'Identifier' &&
-          path.node.callee.name === 'BigInt') {
-        return JSBI;
+      if (path.node.callee.type === 'Identifier') {
+        if (path.node.callee.name === 'Number') {
+          return false;
+        }
+        if (path.node.callee.name === 'String') {
+          return false;
+        }
+        if (path.node.callee.name === 'BigInt') {
+          return JSBI;
+        }
       }
       if (path.node.callee.type === 'MemberExpression' &&
           path.node.callee.object.type === 'Identifier' &&
