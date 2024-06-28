@@ -77,6 +77,40 @@ module.exports = function (babel) {
     }
     return false;
   };
+  
+  const tryType = function (X, binding, path) {
+    if ((X === false || X === JSBI) && binding.constant) {
+      return true;
+    }
+    if ((X === false || X === JSBI) && !binding.constant) {
+      let allAssignmentsHaveSameType = true;
+      for (const path of binding.constantViolations) {
+        allAssignmentsHaveSameType = allAssignmentsHaveSameType && canBeBigInt(path) === X;
+      }
+      if (allAssignmentsHaveSameType) {
+        return true;
+      }
+      if (visited.get(path) === maybeJSBI) { // assume that variable type is the same
+        const visitedOriginal = new Map(visited.entries());
+        visited.set(path, X);
+        for (const e of visited.entries()) {
+          if (e[1] === maybeJSBI) {
+            visited.delete(e[0]);
+          }
+        }
+        let allAssignmentsHaveSameType = true;
+        for (const path of binding.constantViolations) {
+          allAssignmentsHaveSameType = allAssignmentsHaveSameType && canBeBigInt(path) === X;
+        }
+        if (allAssignmentsHaveSameType) {
+          return true;
+        }
+        visited = visitedOriginal;
+      }
+    }
+    return false;
+  };
+
   const canBeBigIntInternal = function (path) {
     if (path.node.type === 'BigIntLiteral') {
       return JSBI;
@@ -136,34 +170,8 @@ module.exports = function (babel) {
           const x = binding.path.get('init');
           if (x.node != null) {
             const X = canBeBigInt(x);
-            if ((X === false || X === JSBI) && binding.constant) {
+            if (tryType(X, binding, path)) {
               return X;
-            }
-            if ((X === false || X === JSBI) && !binding.constant) {
-              let allAssignmentsHaveSameType = true;
-              for (const path of binding.constantViolations) {
-                allAssignmentsHaveSameType = allAssignmentsHaveSameType && canBeBigInt(path) === X;
-              }
-              if (allAssignmentsHaveSameType) {
-                return X;
-              }
-              if (visited.get(path) === maybeJSBI) { // assume that variable type is the same
-                const visitedOriginal = new Map(visited.entries());
-                visited.set(path, X);
-                for (const e of visited.entries()) {
-                  if (e[1] === maybeJSBI) {
-                    visited.delete(e[0]);
-                  }
-                }
-                let allAssignmentsHaveSameType = true;
-                for (const path of binding.constantViolations) {
-                  allAssignmentsHaveSameType = allAssignmentsHaveSameType && canBeBigInt(path) === X;
-                }
-                if (allAssignmentsHaveSameType) {
-                  return X;
-                }
-                visited = visitedOriginal;
-              }
             }
           }
         }
@@ -256,7 +264,7 @@ module.exports = function (babel) {
           }
         }
       }
-      if (binding != null && binding.constant) {
+      if (binding != null) {
         //console.debug(binding);
         const functionDeclarationOrExpression = path.findParent(path => path.isFunctionDeclaration() || path.isFunctionExpression());
         if (functionDeclarationOrExpression != null && functionDeclarationOrExpression.node.params.filter(param => !types.isIdentifier(param)).length == 0) {
@@ -290,11 +298,36 @@ module.exports = function (babel) {
               return false;
             };
             if (ok && isNotTypeOfCheck(tmp.node, 'bigint', variableName)) {
-              return JSBI;
+              if (tryType(JSBI, binding, path)) {
+                return JSBI;
+              }
             }
             if (ok && isNotTypeOfCheck(tmp.node, 'number', variableName)) {
-              return false;
+              if (tryType(false, binding, path)) {
+                return false;
+              }
             }
+          }
+        }
+      }
+      if (binding != null && !binding.constant) {
+        let hasFalse = false;
+        let hasJSBI= false;
+        for (const path of binding.constantViolations) {
+          if (canBeBigInt(path) === false) {
+            hasFalse = true;
+          } else if (canBeBigInt(path) === JSBI) {
+            hasJSBI = true;
+          }
+        }
+        if (hasFalse && !hasJSBI) {
+          if (tryType(false, binding, path)) {
+            return false;
+          }
+        }
+        if (!hasFalse && hasJSBI) {
+          if (tryType(JSBI, binding, path)) {
+            return JSBI;
           }
         }
       }

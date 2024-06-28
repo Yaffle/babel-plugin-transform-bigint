@@ -351,4 +351,41 @@ it('maybeJSBI avoided for a FunctionExpression', function () {
 });
 
 
-  
+it('maybeJSBI avoided for non-constants', function () {
+  const example = `
+    const f = function (x) {
+      if (typeof x !== 'bigint') {
+        throw new RangeError();
+      }
+      x = x * x;
+      return x;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+it('maybeJSBI avoided for non-constants 2', function () {
+  const example = `
+    const f = function (x) {
+      x = BigInt(x);
+      x = x * x;
+      return x;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+it('maybeJSBI avoided for non-constants 3', function () {
+  const example = `
+    const f = function (x) {
+      x = +x;
+      x = x * x;
+      return x;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+

@@ -258,6 +258,39 @@ const f = function (x) {
 };"
 `;
 
+exports[`maybeJSBI avoided for non-constants 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+const f = function (x) {
+  if (!(x instanceof JSBI)) {
+    throw new RangeError();
+  }
+
+  x = JSBI.multiply(x, x);
+  return x;
+};"
+`;
+
+exports[`maybeJSBI avoided for non-constants 2 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+const f = function (x) {
+  x = JSBI.BigInt(x);
+  x = JSBI.multiply(x, x);
+  return x;
+};"
+`;
+
+exports[`maybeJSBI avoided for non-constants 3 1`] = `
+"import JSBI from \\"./jsbi.mjs\\";
+
+const f = function (x) {
+  x = +x;
+  x = x * x;
+  return x;
+};"
+`;
+
 exports[`maybeJSBI2 1`] = `
 "import JSBI from \\"./jsbi.mjs\\";
 
