@@ -157,6 +157,9 @@ module.exports = function (babel) {
       return and(canBeBigInt(path.get('left')), canBeBigInt(path.get('right')));
     }
     if (path.node.type === 'AssignmentExpression') {
+      if (path.node.left.type === 'ArrayPattern') {
+        return maybeJSBI;
+      }
       if (path.node.operator === '=') {
         return canBeBigInt(path.get('right'));
       }
@@ -169,9 +172,12 @@ module.exports = function (babel) {
         if (binding.path.node.type === 'VariableDeclarator') {
           const x = binding.path.get('init');
           if (x.node != null) {
-            const X = canBeBigInt(x);
-            if (tryType(X, binding, path)) {
-              return X;
+            let X = null;
+            if (x.node.type !== 'ArrayExpression') {
+              X = canBeBigInt(x);
+              if (tryType(X, binding, path)) {
+                return X;
+              }
             }
           }
         }
@@ -426,7 +432,10 @@ module.exports = function (babel) {
     if (path.node.type === 'ArrayExpression') {
       return false;
     }
-    console.debug('unknown path.node.type: ' + path.node.type);
+    if (path.node.type === 'ArrayPattern') {
+      return maybeJSBI;
+    }
+    console.warn('unknown path.node.type: ' + path.node.type);
     //TODO:
     return maybeJSBI;
   };

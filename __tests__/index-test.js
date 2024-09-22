@@ -389,3 +389,30 @@ it('maybeJSBI avoided for non-constants 3', function () {
   expect(code).toMatchSnapshot();
 });
 
+
+
+it('destructuring assignment', function () {
+  const example = `
+    const f = function () {
+      let [A, B] = [1n, 0n];
+      return A + B;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+it('destructuring assignment 2', function () {
+  const example = `
+    const f = function () {
+      let A = 1n;
+      let B = 0n;
+      [A, B] = [3n, 4n];
+      return A + B;
+    }
+  `;
+  const {code} = babel.transform(example, {plugins: [plugin]});
+  expect(code).toMatchSnapshot();
+});
+
+
